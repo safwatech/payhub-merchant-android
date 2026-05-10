@@ -1,0 +1,20 @@
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Gradle wrapper jar — regenerate with `gradle wrapper` or open in Android Studio.
+gradle/wrapper/gradle-wrapper.jar
+
+# Secrets — never commit
+app/google-services.json
+keystore.properties
+*.jks
+*.keystore
+release.keystore

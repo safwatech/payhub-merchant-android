@@ -1,0 +1,46 @@
+# Detekt config — light-touch; defaults plus a few Compose-friendly relaxations.
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+
+complexity:
+  # Compose screen functions are naturally long & wide; relax the structural metrics.
+  LongMethod:
+    threshold: 160
+  LongParameterList:
+    functionThreshold: 10
+    constructorThreshold: 10
+    ignoreDefaultParameters: true
+  TooManyFunctions:
+    active: false
+  CyclomaticComplexMethod:
+    threshold: 24
+  NestedBlockDepth:
+    threshold: 6
+
+style:
+  MagicNumber:
+    active: false
+  UnusedPrivateMember:
+    active: true
+  ForbiddenComment:
+    active: false
+  MaxLineLength:
+    maxLineLength: 140
+  ReturnCount:
+    max: 6
+  WildcardImport:
+    active: false
+
+naming:
+  FunctionNaming:
+    # @Composable functions are PascalCase.
+    ignoreAnnotated: ['Composable']
+  TopLevelPropertyNaming:
+    active: false
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false
+  SwallowedException:
+    active: false

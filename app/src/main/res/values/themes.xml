@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base app theme: a thin Material 3 host. The real colours live in Compose
+         (ui/theme/Theme.kt); this only governs the launch window & system bars. -->
+    <style name="Theme.PayHubMerchant" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <!-- Splash window: amber-tinted while the process warms up. -->
+    <style name="Theme.PayHubMerchant.Splash" parent="Theme.PayHubMerchant">
+        <item name="android:windowBackground">@color/brand_amber</item>
+    </style>
+</resources>

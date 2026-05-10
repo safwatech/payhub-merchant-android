@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- PayHub brand amber (the favicon mark). Used by the splash window and the
+         adaptive-icon background. The full Compose colour scheme is seeded from this. -->
+    <color name="brand_amber">#FAB64B</color>
+    <color name="brand_amber_dark">#C98B2E</color>
+</resources>

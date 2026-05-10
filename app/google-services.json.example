@@ -1,0 +1,49 @@
+{
+  "_comment": "TEMPLATE ONLY — copy to `app/google-services.json` and replace with a real config from your Firebase project (Project settings → General → Your apps → Android app). The real file is gitignored. Without it, the Google-services Gradle plugin is not applied and FCM is a runtime no-op (the rest of the app works).",
+  "project_info": {
+    "project_number": "000000000000",
+    "project_id": "payhub-merchant-REPLACE",
+    "storage_bucket": "payhub-merchant-REPLACE.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:REPLACEME",
+        "android_client_info": {
+          "package_name": "ly.payhub.merchant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "REPLACE_WITH_YOUR_FIREBASE_ANDROID_API_KEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:REPLACEME_DEBUG",
+        "android_client_info": {
+          "package_name": "ly.payhub.merchant.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "REPLACE_WITH_YOUR_FIREBASE_ANDROID_API_KEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

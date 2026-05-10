@@ -22,8 +22,9 @@ import kotlin.coroutines.resumeWithException
  * Raw authenticated HTTP for the two `/merchant/*` endpoints the 1.1.0 SDK
  * doesn't yet expose:
  *
- *  - `POST   /merchant/devices`              — register an FCM push token
- *  - `DELETE /merchant/devices?token=<fcm>`  — unregister it
+ *  - `POST   /merchant/devices`                  — register an FCM push token
+ *  - `DELETE /merchant/devices` (body `{token}`) — unregister it (token in the
+ *    JSON body, not a query string, so it never lands in WAF/access logs)
  *  - `GET    /merchant/dashboard?group_by=sub&window_hours=N` — the per-shop
  *    breakdown (the SDK's `MerchantDashboard` model has no `sub_breakdown` field).
  *
@@ -42,10 +43,9 @@ class RawMerchantApi(private val httpClient: OkHttpClient) {
 
     suspend fun unregisterDevice(baseUrl: String, accessToken: String, fcmToken: String): Result<Unit> =
         execUnit(baseUrl, accessToken) { url ->
-            val u = "${url}/merchant/devices".toHttpUrl().newBuilder()
-                .addQueryParameter("token", fcmToken)
-                .build()
-            Request.Builder().url(u).delete()
+            Request.Builder()
+                .url("${url}/merchant/devices")
+                .delete(json.encodeToString(TokenBody(token = fcmToken)).toRequestBody(JSON))
         }
 
     suspend fun dashboardBySub(baseUrl: String, accessToken: String, windowHours: Int): Result<SubBreakdownResponse> =
@@ -96,6 +96,9 @@ class RawMerchantApi(private val httpClient: OkHttpClient) {
 
     @Serializable
     private data class DeviceBody(val platform: String = "android", val token: String)
+
+    @Serializable
+    private data class TokenBody(val token: String)
 
     @Serializable
     data class SubBreakdownResponse(

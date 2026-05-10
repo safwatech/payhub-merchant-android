@@ -42,8 +42,8 @@ change-password, MFA management, settlements, sub-merchant management,
 `/merchant/devices`) are either omitted or, where it's clean, done as a small
 **raw authenticated HTTP call** inside `data/RawMerchantApi.kt`:
 
-- `POST /merchant/devices` / `DELETE /merchant/devices?token=…` — FCM push
-  registration.
+- `POST /merchant/devices` / `DELETE /merchant/devices` (token in the JSON
+  body, not a query string) — FCM push registration.
 - `GET /merchant/dashboard?group_by=sub&window_hours=…` — the per-shop
   breakdown for parent merchants (the SDK's `MerchantDashboard` model has no
   `sub_breakdown` field).

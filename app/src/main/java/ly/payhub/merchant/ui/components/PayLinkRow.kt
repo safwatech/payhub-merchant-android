@@ -15,9 +15,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ly.payhub.PayLink
+import ly.payhub.merchant.R
 import ly.payhub.merchant.ui.theme.MonoStyle
 import ly.payhub.merchant.util.Money
 import ly.payhub.merchant.util.RelativeTime
@@ -29,8 +31,8 @@ fun PayLinkRow(link: PayLink, onClick: () -> Unit, modifier: Modifier = Modifier
     val expiryText = when {
         link.status.lowercase(Locale.ROOT) != "active" -> null
         link.expiresAt == null -> null
-        expired -> "expired"
-        else -> "expires ${RelativeTime.until(link.expiresAt)}"
+        expired -> stringResource(R.string.pl_expired)
+        else -> stringResource(R.string.pl_expires_in, RelativeTime.until(link.expiresAt))
     }
     ListItem(
         modifier = modifier

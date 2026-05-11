@@ -15,14 +15,14 @@ import ly.payhub.merchant.data.appError
 import ly.payhub.merchant.util.isWriteRole
 import javax.inject.Inject
 
-/** The filter chips at the top of the pay-links list. */
-enum class PayLinkFilter(val label: String) {
-    All("All"),
-    NeedsFollowup("Needs follow-up"),
-    Active("Active"),
-    Paid("Paid"),
-    Expired("Expired"),
-    Cancelled("Cancelled"),
+/** The filter chips at the top of the pay-links list. Labels resolve via [labelRes]. */
+enum class PayLinkFilter(val labelRes: Int) {
+    All(ly.payhub.merchant.R.string.pl_filter_all),
+    NeedsFollowup(ly.payhub.merchant.R.string.pl_filter_needs_followup),
+    Active(ly.payhub.merchant.R.string.pl_filter_active),
+    Paid(ly.payhub.merchant.R.string.pl_filter_paid),
+    Expired(ly.payhub.merchant.R.string.pl_filter_expired),
+    Cancelled(ly.payhub.merchant.R.string.pl_filter_cancelled),
     ;
 
     /** Maps to `PayhubMerchantClient.payLinks.list(...)` arguments. */

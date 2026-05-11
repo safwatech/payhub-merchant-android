@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ly.payhub.merchant.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,10 +51,13 @@ fun MfaScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Two-factor verification") },
+                title = { Text(stringResource(R.string.mfa_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back),
+                        )
                     }
                 },
             )
@@ -74,9 +79,9 @@ fun MfaScreen(
                 modifier = Modifier.size(48.dp),
                 tint = MaterialTheme.colorScheme.primary,
             )
-            Text("Enter your code", style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.mfa_title), style = MaterialTheme.typography.titleLarge)
             Text(
-                "Open your authenticator app and enter the 6-digit code for PayHub.",
+                stringResource(R.string.mfa_hint),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -85,7 +90,7 @@ fun MfaScreen(
             OutlinedTextField(
                 value = state.code,
                 onValueChange = viewModel::onCode,
-                label = { Text("Authentication code") },
+                label = { Text(stringResource(R.string.mfa_code_label)) },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.headlineSmall.copy(letterSpacing = 8.sp, textAlign = TextAlign.Center),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Done),
@@ -105,7 +110,7 @@ fun MfaScreen(
                 if (state.submitting) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 } else {
-                    Text("Verify")
+                    Text(stringResource(R.string.mfa_verify))
                 }
             }
         }

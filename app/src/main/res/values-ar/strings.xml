@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Arabic localisation for the PayHub Merchant Android app.
+
+  Labels are pulled from web/src/i18n/locales/ar.ts where the concept matches
+  the SPA / PWA, so the operator / shopkeeper sees one consistent vocabulary
+  across portal, web-app and native app. Android-only copy (the "Advanced"
+  server-URL toggle, push-permission rationale, FCM channel name) is written
+  fresh to match the app voice.
+-->
+<resources>
+    <string name="app_name">PayHub Merchant</string>
+
+    <!-- قناة الإشعارات -->
+    <string name="notif_channel_payments_id">payments</string>
+    <string name="notif_channel_payments_name">المدفوعات</string>
+    <string name="notif_channel_payments_desc">إشعارات روابط الدفع والمدفوعات لحسابك التجاري</string>
+    <string name="push_fallback_title">PayHub</string>
+    <string name="push_fallback_body">لديك تحديث دفع جديد.</string>
+
+    <!-- تسميات شريط الحالة -->
+    <string name="status_paid">مدفوع</string>
+    <string name="status_expired">منتهي</string>
+    <string name="status_shop">متجر</string>
+
+    <!-- إجراءات عامة -->
+    <string name="action_retry">إعادة المحاولة</string>
+    <string name="action_sign_in">تسجيل الدخول</string>
+    <string name="action_sign_out">تسجيل الخروج</string>
+    <string name="action_cancel">إلغاء</string>
+    <string name="action_back">رجوع</string>
+    <string name="action_share">مشاركة</string>
+    <string name="action_copy">نسخ</string>
+    <string name="action_copy_link">نسخ الرابط</string>
+    <string name="action_open">فتح</string>
+    <string name="action_close">إغلاق</string>
+    <string name="action_done">تم</string>
+    <string name="loading">جارٍ التحميل…</string>
+    <string name="common_copied">تم النسخ</string>
+    <string name="common_dash">—</string>
+
+    <!-- صناديق الحالة -->
+    <string name="state_offline_title">لا يوجد اتصال بالإنترنت</string>
+    <string name="state_error_title">حدث خطأ ما</string>
+
+    <!-- رسائل أخطاء AppError -->
+    <string name="error_unauthorized">انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.</string>
+    <string name="error_forbidden">لا تملك صلاحية القيام بذلك.</string>
+    <string name="error_not_found">غير موجود.</string>
+    <string name="error_rate_limited">عدد الطلبات كبير — أبطئ وحاول مرة أخرى.</string>
+    <string name="error_network">تعذّر الوصول إلى PayHub. تأكّد من الاتصال وحاول مرة أخرى.</string>
+    <string name="error_timeout">انتهت مهلة الطلب. حاول مرة أخرى.</string>
+    <string name="error_unexpected">حدث خطأ ما. حاول مرة أخرى.</string>
+    <string name="error_server_busy">PayHub تواجه مشكلة الآن. حاول بعد قليل.</string>
+
+    <!-- العلامة -->
+    <string name="brand_tagline">واجهة المُشغّل لمتجرك</string>
+
+    <!-- تسجيل الدخول -->
+    <string name="login_title">تسجيل الدخول إلى PayHub</string>
+    <string name="login_subtitle">PayHub Merchant — لصاحب المتجر.</string>
+    <string name="login_server_url">عنوان الخادم</string>
+    <string name="login_server_url_hint">عنوان تثبيت PayHub الخاص بك (الافتراضي: app.payhub.ly).</string>
+    <string name="login_merchant_code">رمز التاجر</string>
+    <string name="login_shop_code">رمز المتجر (اختياري)</string>
+    <string name="login_shop_code_hint">فقط إذا كنت تسجّل الدخول كمستخدم متجر فرعي.</string>
+    <string name="login_username">اسم المستخدم</string>
+    <string name="login_password">كلمة المرور</string>
+    <string name="login_advanced">إعدادات متقدّمة</string>
+    <string name="login_forgot">نسيت كلمة المرور؟</string>
+
+    <!-- المصادقة الثنائية -->
+    <string name="mfa_title">رمز التحقق الثنائي</string>
+    <string name="mfa_hint">أدخل الرمز المكوّن من 6 أرقام من تطبيق المصادقة.</string>
+    <string name="mfa_code_label">رمز لمرة واحدة</string>
+    <string name="mfa_verify">تحقّق</string>
+
+    <!-- نسيت كلمة المرور -->
+    <string name="forgot_title">إعادة تعيين كلمة المرور</string>
+    <string name="forgot_subtitle">سنرسل تعليمات إعادة التعيين عبر البريد والهاتف.</string>
+    <string name="forgot_submit">إرسال رابط الإعادة</string>
+    <string name="forgot_success">إذا كان الحساب موجوداً فقد أرسلنا تعليمات إعادة التعيين.</string>
+
+    <!-- قبول الدعوة -->
+    <string name="invite_title">عيّن كلمة المرور</string>
+    <string name="invite_subtitle">اختر كلمة مرور لحسابك في PayHub.</string>
+    <string name="invite_new_password">كلمة المرور الجديدة</string>
+    <string name="invite_confirm_password">تأكيد كلمة المرور</string>
+    <string name="invite_mismatch">كلمتا المرور غير متطابقتين.</string>
+    <string name="invite_submit">حفظ كلمة المرور</string>
+    <string name="invite_success">تم تعيين كلمة المرور — يمكنك تسجيل الدخول الآن.</string>
+    <string name="invite_bad_link">رابط الدعوة غير مكتمل. افتح الرابط من بريدك مرة أخرى.</string>
+    <string name="invite_min_length">يجب أن لا تقل كلمة المرور عن 12 حرفاً.</string>
+
+    <!-- التنقّل -->
+    <string name="nav_dashboard">لوحة المعلومات</string>
+    <string name="nav_paylinks">روابط الدفع</string>
+    <string name="nav_payments">المدفوعات</string>
+    <string name="nav_more">المزيد</string>
+
+    <!-- لوحة المعلومات -->
+    <string name="dash_loading">جارٍ تحميل لوحة المعلومات…</string>
+    <string name="dash_last_window">آخر %1$s</string>
+    <string name="dash_window_24h">٢٤ سا</string>
+    <string name="dash_window_3d">٣ ي</string>
+    <string name="dash_window_7d">٧ ي</string>
+    <string name="dash_paid">مدفوعة</string>
+    <string name="dash_inflight">قيد التنفيذ</string>
+    <string name="dash_active_links">روابط دفع نشطة</string>
+    <string name="dash_needs_followup">بحاجة لمتابعة</string>
+    <string name="dash_by_shop">حسب المتجر</string>
+    <string name="dash_no_shop_activity">لا يوجد نشاط متجر في هذه الفترة.</string>
+    <string name="dash_breakdown_unavailable">التوزيع حسب المتجر غير متاح الآن.</string>
+    <string name="dash_stat_paid">مدفوعة</string>
+    <string name="dash_stat_volume">الإجمالي</string>
+    <string name="dash_stat_inflight">قيد التنفيذ</string>
+    <string name="dash_stat_followup">المتابعة</string>
+
+    <!-- مشاركة -->
+    <string name="share_paylink_chooser">مشاركة رابط الدفع</string>
+
+    <!-- قائمة روابط الدفع -->
+    <string name="pl_filter_all">الكل</string>
+    <string name="pl_filter_needs_followup">بحاجة لمتابعة</string>
+    <string name="pl_filter_active">نشط</string>
+    <string name="pl_filter_paid">مدفوع</string>
+    <string name="pl_filter_expired">منتهي</string>
+    <string name="pl_filter_cancelled">ملغى</string>
+    <string name="pl_new_link">رابط جديد</string>
+    <string name="pl_loading">جارٍ تحميل روابط الدفع…</string>
+    <string name="pl_empty_title">لا توجد روابط دفع هنا</string>
+    <string name="pl_empty_all_body">أنشئ رابطاً وشاركه مع عميلك لتُحصِّل المبلغ.</string>
+    <string name="pl_empty_filter_body">لا شيء يطابق هذا التصفية الآن.</string>
+    <string name="pl_empty_action">إنشاء رابط</string>
+    <string name="pl_expires_in">ينتهي %1$s</string>
+    <string name="pl_expired">انتهى</string>
+
+    <!-- إنشاء رابط دفع -->
+    <string name="plc_title">رابط دفع جديد</string>
+    <string name="plc_amount_lyd">المبلغ (د.ل)</string>
+    <string name="plc_description">الوصف (اختياري)</string>
+    <string name="plc_description_placeholder">طلب رقم 1234 — فنجاني قهوة</string>
+    <string name="plc_customer_phone">هاتف العميل (اختياري)</string>
+    <string name="plc_customer_phone_hint">إن أعطيتنا رقماً، سنذكّر العميل بالرابط.</string>
+    <string name="plc_methods">طرق الدفع (اختياري)</string>
+    <string name="plc_methods_hint">اتركها فارغة لإظهار جميع طرق الدفع المُفعّلة لديك.</string>
+    <string name="plc_expires_days">ينتهي خلال (أيام)</string>
+    <string name="plc_order_ref">رقم الطلب</string>
+    <string name="plc_order_ref_regenerate">رقم جديد</string>
+    <string name="plc_order_ref_required">رقم الطلب مطلوب.</string>
+    <string name="plc_bad_amount">أدخل مبلغاً موجباً بالدينار الليبي.</string>
+    <string name="plc_submit">إنشاء</string>
+    <string name="plc_creating">جارٍ الإنشاء…</string>
+    <string name="plc_success_title">تم إنشاء الرابط</string>
+    <string name="plc_success_lead">شارك الرابط مع عميلك عبر WhatsApp / SMS.</string>
+    <string name="plc_success_url">رابط العميل</string>
+
+    <!-- تفاصيل رابط الدفع -->
+    <string name="pld_title">رابط الدفع</string>
+    <string name="pld_field_order_ref">رقم الطلب</string>
+    <string name="pld_field_description">الوصف</string>
+    <string name="pld_field_link_url">عنوان الرابط</string>
+    <string name="pld_field_expires">ينتهي</string>
+    <string name="pld_field_customer_attempts">محاولات العميل</string>
+    <string name="pld_field_customer_attempts_value">%1$d / 5</string>
+    <string name="pld_field_extended">تم تمديده</string>
+    <string name="pld_field_extended_value">%1$d مرّة (آخر مرّة %2$s)</string>
+    <string name="pld_field_reshared">أُعيدت مشاركته</string>
+    <string name="pld_field_reshared_value">%1$d مرّة (آخر مرّة %2$s)</string>
+    <string name="pld_field_clone_gen">جيل النسخ</string>
+    <string name="pld_field_created">تاريخ الإنشاء</string>
+    <string name="pld_read_only_hint">يمكن لدورك مشاهدة الروابط دون تعديلها. اطلب من مالك المتجر تنفيذ التغيير.</string>
+    <string name="pld_action_reshare">إعادة المشاركة</string>
+    <string name="pld_action_copy">نسخ الرابط</string>
+    <string name="pld_action_extend">تمديد</string>
+    <string name="pld_action_clone">استنساخ</string>
+    <string name="pld_action_cancel_link">إلغاء الرابط</string>
+    <string name="pld_cancel_dialog_title">إلغاء هذا الرابط؟</string>
+    <string name="pld_cancel_dialog_body">لن يستطيع العملاء الدفع به بعد ذلك. لا يمكن التراجع عن هذه العملية.</string>
+    <string name="pld_cancel_dialog_confirm">إلغاء الرابط</string>
+    <string name="pld_cancel_dialog_keep">الإبقاء عليه</string>
+    <string name="pld_extend_title">تمديد الصلاحية</string>
+    <string name="pld_extend_body">أجِّل تاريخ انتهاء الرابط (يحدّه الحد الأقصى للتثبيت).</string>
+    <string name="pld_extend_1d">+ يوم</string>
+    <string name="pld_extend_1w">+ أسبوع</string>
+    <string name="pld_extend_custom_label">مخصّص — عدد الأيام</string>
+    <string name="pld_extend_submit">تمديد</string>
+    <string name="pld_cloned_to">تم الاستنساخ باسم %1$s</string>
+    <string name="pld_link_copied">تم نسخ الرابط</string>
+    <string name="pld_pay_link_label">رابط دفع PayHub</string>
+
+    <!-- قائمة المدفوعات -->
+    <string name="pay_loading">جارٍ تحميل المدفوعات…</string>
+    <string name="pay_filter_all">الكل</string>
+    <string name="pay_filter_pending">قيد الانتظار</string>
+    <string name="pay_filter_requires_action">بانتظار العميل</string>
+    <string name="pay_filter_succeeded">مدفوعة</string>
+    <string name="pay_filter_failed">فشلت</string>
+    <string name="pay_filter_cancelled">ملغاة</string>
+    <string name="pay_filter_refunded">مُستردة</string>
+    <string name="pay_empty_title">لا توجد مدفوعات هنا</string>
+    <string name="pay_empty_all_body">ستظهر المدفوعات التي يقوم بها عملاؤك هنا.</string>
+    <string name="pay_empty_filter_body">لا شيء يطابق هذا التصفية الآن.</string>
+
+    <!-- تفاصيل الدفعة -->
+    <string name="pay_detail_title">الدفعة</string>
+    <string name="pay_detail_field_order_ref">رقم الطلب</string>
+    <string name="pay_detail_field_customer_mobile">هاتف العميل</string>
+    <string name="pay_detail_field_created">تاريخ الإنشاء</string>
+    <string name="pay_detail_field_last_update">آخر تحديث</string>
+    <string name="pay_detail_field_last_update_value">%1$s  (%2$s)</string>
+    <string name="pay_detail_view_pay_link">عرض رابط الدفع</string>
+    <string name="pay_detail_events">الأحداث</string>
+    <string name="pay_detail_no_events">لم تُسجَّل أحداث بعد.</string>
+    <string name="pay_detail_metadata">البيانات الوصفية</string>
+    <string name="pay_detail_copy_label">رقم الطلب</string>
+
+    <!-- قائمة التسويات -->
+    <string name="sett_title">التسويات</string>
+    <string name="sett_loading">جارٍ التحميل…</string>
+    <string name="sett_empty_title">لا توجد ملفات تسوية بعد</string>
+    <string name="sett_empty_body">حين تُسلّم البوابة ملف تسوية، سيظهر هنا.</string>
+    <string name="sett_matched_count">%1$d/%2$d مطابق</string>
+    <string name="sett_mismatch_count">%1$d عدم تطابق</string>
+
+    <!-- تفاصيل ملف التسوية -->
+    <string name="sett_detail_title">ملف التسوية</string>
+    <string name="sett_filter_all">الكل</string>
+    <string name="sett_filter_matched">مطابق</string>
+    <string name="sett_filter_mismatch">عدم تطابق</string>
+    <string name="sett_filter_missing_hub">مفقود في النظام</string>
+    <string name="sett_filter_missing_psp">مفقود لدى البوابة</string>
+    <string name="sett_uploaded_ago">رُفع %1$s</string>
+    <string name="sett_period">الفترة: %1$s  →  %2$s</string>
+    <string name="sett_counter_total">الإجمالي</string>
+    <string name="sett_counter_matched">مطابق</string>
+    <string name="sett_counter_mismatch">عدم تطابق</string>
+    <string name="sett_counter_missing_hub">مفقود — النظام</string>
+    <string name="sett_counter_missing_psp">مفقود — البوابة</string>
+    <string name="sett_psp_status">البوابة: %1$s</string>
+    <string name="sett_no_rows">لا توجد صفوف تطابق هذا التصفية.</string>
+    <string name="sett_diff_row">%1$s — النظام: %2$s · البوابة: %3$s</string>
+    <string name="sett_diff_more">+%1$d آخر</string>
+
+    <!-- المزيد -->
+    <string name="more_title">الحساب</string>
+    <string name="more_loading_profile">جارٍ تحميل ملفك التعريفي…</string>
+    <string name="more_username">اسم المستخدم</string>
+    <string name="more_merchant">التاجر</string>
+    <string name="more_shop">المتجر</string>
+    <string name="more_email">البريد الإلكتروني</string>
+    <string name="more_mobile">الهاتف</string>
+    <string name="more_acting_as">يعمل بدور %1$s</string>
+    <string name="more_2fa_on">المصادقة الثنائية مُفعَّلة</string>
+    <string name="more_aggregator_on">المُجمِّع: مُفعَّل</string>
+    <string name="more_aggregator_off">المُجمِّع: مُعطَّل</string>
+    <string name="more_pay_link_quota">حصّة روابط الدفع: %1$s</string>
+    <string name="more_smart_routing_on">التوجيه الذكي: مُفعَّل</string>
+    <string name="more_dot">  ·  </string>
+    <string name="more_push_title">إشعارات الدفع</string>
+    <string name="more_push_hint">تلقَّ إشعاراً عند دفع رابط دفع أو الحاجة للمتابعة</string>
+    <string name="more_settlements">التسويات</string>
+    <string name="more_settlements_hint">ملفات المطابقة مع مدفوعاتك</string>
+    <string name="more_reset_pw">طلب إعادة تعيين كلمة المرور</string>
+    <string name="more_reset_pw_hint">يرسل تعليمات الإعادة عبر البريد والهاتف</string>
+    <string name="more_version">PayHub Merchant %1$s\n%2$s</string>
+
+    <!-- تركيبات نصّية -->
+    <string name="merchant_with_code">%1$s  ·  %2$s</string>
+    <string name="shop_subtitle_suffix">  · متجر %1$s</string>
+</resources>

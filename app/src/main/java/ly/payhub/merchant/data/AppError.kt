@@ -1,5 +1,7 @@
 package ly.payhub.merchant.data
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import ly.payhub.AuthenticationException
 import ly.payhub.ConnectionException
 import ly.payhub.DecodeException
@@ -66,6 +68,27 @@ sealed class AppError(open val message: String, open val cause: Throwable? = nul
 
 /** Lets us thread an [AppError] through `Result`'s Throwable channel without losing the typed mapping. */
 class AppErrorException(val error: AppError) : RuntimeException(error.message, error.cause)
+
+/**
+ * Composable-friendly localised message for an [AppError]. The default
+ * [AppError.message] is an English fallback used in logs / snackbars where a
+ * Composable context isn't available; this extension resolves to the
+ * matching `values{,-ar}/strings.xml` entry so UI surfaces translate properly.
+ *
+ * `Invalid` carries a server-supplied message (the merchant API isn't
+ * localised yet) — we surface it verbatim. Same for the `cause`-carrying
+ * variants when the server emitted a human string we shouldn't override.
+ */
+@Composable
+fun AppError.localizedMessage(): String = when (this) {
+    is AppError.Unauthorized -> stringResource(ly.payhub.merchant.R.string.error_unauthorized)
+    is AppError.Forbidden -> stringResource(ly.payhub.merchant.R.string.error_forbidden)
+    is AppError.NotFound -> stringResource(ly.payhub.merchant.R.string.error_not_found)
+    is AppError.RateLimited -> stringResource(ly.payhub.merchant.R.string.error_rate_limited)
+    is AppError.Network -> stringResource(ly.payhub.merchant.R.string.error_network)
+    is AppError.Invalid -> message
+    is AppError.Unexpected -> stringResource(ly.payhub.merchant.R.string.error_unexpected)
+}
 
 /**
  * Wrap a suspending SDK call: on failure the `Result` carries an [AppErrorException].

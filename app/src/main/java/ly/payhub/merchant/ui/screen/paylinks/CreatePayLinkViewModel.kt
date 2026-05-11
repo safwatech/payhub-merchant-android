@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ly.payhub.CreatePayLinkRequest
 import ly.payhub.PayLink
+import ly.payhub.merchant.R
 import ly.payhub.merchant.data.MerchantRepository
 import ly.payhub.merchant.data.asAppError
 import ly.payhub.merchant.util.KNOWN_PSPS
@@ -27,6 +28,8 @@ data class CreatePayLinkUiState(
     val orderRef: String = "",
     val orderRefEdited: Boolean = false,
     val submitting: Boolean = false,
+    /** Localised validation error (resource id), or server-supplied message via [error]. */
+    val errorRes: Int? = null,
     val error: String? = null,
     /** Set on success — the screen swaps to the "share" panel. */
     val created: PayLink? = null,
@@ -51,15 +54,19 @@ class CreatePayLinkViewModel @Inject constructor(
 
     private fun generateRef(): String = "$merchantSlug-${Random.nextInt(1_000_000, 10_000_000)}"
 
-    fun onAmount(v: String) = _state.update { it.copy(amount = v.filter { c -> c.isDigit() || c == '.' }, error = null) }
-    fun onDescription(v: String) = _state.update { it.copy(description = v, error = null) }
-    fun onCustomerPhone(v: String) = _state.update { it.copy(customerPhone = v, error = null) }
-    fun onExpiryDays(v: String) = _state.update { it.copy(expiryDays = v.filter(Char::isDigit).take(3), error = null) }
-    fun onOrderRef(v: String) = _state.update { it.copy(orderRef = v, orderRefEdited = true, error = null) }
+    private fun clearError(s: CreatePayLinkUiState) = s.copy(errorRes = null, error = null)
+
+    fun onAmount(v: String) = _state.update { clearError(it).copy(amount = v.filter { c -> c.isDigit() || c == '.' }) }
+    fun onDescription(v: String) = _state.update { clearError(it).copy(description = v) }
+    fun onCustomerPhone(v: String) = _state.update { clearError(it).copy(customerPhone = v) }
+    fun onExpiryDays(v: String) = _state.update { clearError(it).copy(expiryDays = v.filter(Char::isDigit).take(3)) }
+    fun onOrderRef(v: String) = _state.update { clearError(it).copy(orderRef = v, orderRefEdited = true) }
     fun regenerateRef() = _state.update { it.copy(orderRef = generateRef(), orderRefEdited = false) }
 
     fun togglePsp(code: String) = _state.update {
-        it.copy(selectedPsps = if (code in it.selectedPsps) it.selectedPsps - code else it.selectedPsps + code, error = null)
+        clearError(it).copy(
+            selectedPsps = if (code in it.selectedPsps) it.selectedPsps - code else it.selectedPsps + code,
+        )
     }
 
     fun submit() {
@@ -68,9 +75,11 @@ class CreatePayLinkViewModel @Inject constructor(
         val amountMinor = Money.parseToMinor(s.amount, "LYD")
         when {
             amountMinor == null || amountMinor <= 0 -> {
-                _state.update { it.copy(error = "Enter a valid amount.") }; return
+                _state.update { it.copy(errorRes = R.string.plc_bad_amount) }; return
             }
-            s.orderRef.isBlank() -> { _state.update { it.copy(error = "Order reference can't be empty.") }; return }
+            s.orderRef.isBlank() -> {
+                _state.update { it.copy(errorRes = R.string.plc_order_ref_required) }; return
+            }
         }
         val days = s.expiryDays.toIntOrNull()?.takeIf { it in 1..3650 } ?: CreatePayLinkUiState.DEFAULT_EXPIRY_DAYS
         val request = CreatePayLinkRequest(
@@ -83,7 +92,7 @@ class CreatePayLinkViewModel @Inject constructor(
             expiresInSeconds = days * 86_400,
             language = "both",
         )
-        _state.update { it.copy(submitting = true, error = null) }
+        _state.update { it.copy(submitting = true, errorRes = null, error = null) }
         viewModelScope.launch {
             repo.createPayLink(request).fold(
                 onSuccess = { link -> _state.update { it.copy(submitting = false, created = link) } },

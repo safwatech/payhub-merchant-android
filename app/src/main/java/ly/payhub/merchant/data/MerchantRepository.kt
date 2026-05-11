@@ -192,18 +192,55 @@ class MerchantRepository(
     suspend fun dashboard(windowHours: Int): Result<MerchantDashboard> = guarded { client().reports.dashboard(windowHours = windowHours) }
 
     /** Per-shop breakdown for a parent merchant. Raw HTTP — see [RawMerchantApi]. */
-    suspend fun dashboardBySub(windowHours: Int): Result<RawMerchantApi.SubBreakdownResponse> {
-        val token = client().currentTokens()?.accessToken ?: return Result.failure(AppErrorException(AppError.Unauthorized()))
-        return rawApi.dashboardBySub(tokenStore.baseUrl, token, windowHours).also { propagateAuthLoss(it) }
+    suspend fun dashboardBySub(windowHours: Int): Result<RawMerchantApi.SubBreakdownResponse> =
+        withAccess { token -> rawApi.dashboardBySub(tokenStore.baseUrl, token, windowHours) }
+
+    // ------------------------------------------------------------------ payments (raw — SDK 1.2)
+
+    /** Paginated payments list. Server caps `limit` at 200. */
+    suspend fun listPayments(
+        psp: String? = null,
+        status: String? = null,
+        limit: Int = 50,
+        offset: Int = 0,
+    ): Result<List<RawMerchantApi.PaymentRow>> = withAccess { token ->
+        rawApi.listPayments(tokenStore.baseUrl, token, psp = psp, status = status, limit = limit, offset = offset)
+    }
+
+    /** Payment detail incl. event timeline + metadata. */
+    suspend fun getPayment(id: String): Result<RawMerchantApi.PaymentDetail> = withAccess { token ->
+        rawApi.getPayment(tokenStore.baseUrl, token, id)
+    }
+
+    // ------------------------------------------------------------------ settlements (raw — SDK 1.2)
+
+    suspend fun listSettlements(
+        psp: String? = null,
+        limit: Int = 50,
+        offset: Int = 0,
+    ): Result<List<RawMerchantApi.SettlementFile>> = withAccess { token ->
+        rawApi.listSettlements(tokenStore.baseUrl, token, psp = psp, limit = limit, offset = offset)
+    }
+
+    suspend fun getSettlement(fileId: String): Result<RawMerchantApi.SettlementFile> = withAccess { token ->
+        rawApi.getSettlement(tokenStore.baseUrl, token, fileId)
+    }
+
+    suspend fun listSettlementRows(
+        fileId: String,
+        statusFilter: String? = null,
+        limit: Int = 100,
+        offset: Int = 0,
+    ): Result<List<RawMerchantApi.SettlementRow>> = withAccess { token ->
+        rawApi.listSettlementRows(tokenStore.baseUrl, token, fileId, statusFilter = statusFilter, limit = limit, offset = offset)
     }
 
     // ------------------------------------------------------------------ devices (push)
 
-    suspend fun registerDevice(fcmToken: String): Result<Unit> {
-        val token = client().currentTokens()?.accessToken ?: return Result.failure(AppErrorException(AppError.Unauthorized()))
-        return rawApi.registerDevice(tokenStore.baseUrl, token, fcmToken).also { propagateAuthLoss(it) }
-    }
+    suspend fun registerDevice(fcmToken: String): Result<Unit> =
+        withAccess { token -> rawApi.registerDevice(tokenStore.baseUrl, token, fcmToken) }
 
+    /** Best-effort: signed-out callers get a silent success — we have nothing to unregister with. */
     suspend fun unregisterDevice(fcmToken: String): Result<Unit> {
         val token = client().currentTokens()?.accessToken ?: return Result.success(Unit)
         return rawApi.unregisterDevice(tokenStore.baseUrl, token, fcmToken).also { propagateAuthLoss(it) }
@@ -217,6 +254,19 @@ class MerchantRepository(
 
     private suspend fun <T> guarded(block: suspend () -> T): Result<T> {
         val r = runCatchingApp { block() }
+        propagateAuthLoss(r)
+        return r
+    }
+
+    /**
+     * Wraps a raw-API call that needs the current bearer token. Mirrors [guarded]
+     * for the SDK path: passes the access token in (returning Unauthorized
+     * straight away if we don't have one) and trips [handleAuthLoss] on a 401.
+     */
+    private suspend fun <T> withAccess(block: suspend (String) -> Result<T>): Result<T> {
+        val token = client().currentTokens()?.accessToken
+            ?: return Result.failure(AppErrorException(AppError.Unauthorized()))
+        val r = block(token)
         propagateAuthLoss(r)
         return r
     }

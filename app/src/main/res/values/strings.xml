@@ -6,21 +6,56 @@
     <string name="notif_channel_payments_id">payments</string>
     <string name="notif_channel_payments_name">Payments</string>
     <string name="notif_channel_payments_desc">Pay-link and payment activity for your merchant account</string>
+    <!-- Notification fallbacks (used when the FCM payload doesn\'t carry title/body). -->
+    <string name="push_fallback_title">PayHub</string>
+    <string name="push_fallback_body">You have a new payment update.</string>
 
-    <!-- Generic -->
+    <!-- Status pill labels (used by the StatusPill component across screens). -->
+    <string name="status_paid">Paid</string>
+    <string name="status_expired">Expired</string>
+    <string name="status_shop">Shop</string>
+
+    <!-- Generic actions / common labels -->
     <string name="action_retry">Retry</string>
     <string name="action_sign_in">Sign in</string>
     <string name="action_sign_out">Sign out</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_back">Back</string>
     <string name="action_share">Share</string>
-    <string name="action_copy">Copy link</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_copy_link">Copy link</string>
+    <string name="action_open">Open</string>
+    <string name="action_close">Close</string>
+    <string name="action_done">Done</string>
     <string name="loading">Loading…</string>
+    <string name="common_copied">Copied</string>
+    <string name="common_dash">—</string>
+
+    <!-- Generic error surface for ErrorBox -->
+    <string name="state_offline_title">You’re offline</string>
+    <string name="state_error_title">Something went wrong</string>
+
+    <!-- AppError default messages — used when the UI doesn\'t have richer context. -->
+    <string name="error_unauthorized">Your session has expired. Please sign in again.</string>
+    <string name="error_forbidden">You don\'t have permission to do that.</string>
+    <string name="error_not_found">Not found.</string>
+    <string name="error_rate_limited">Too many requests — please slow down and try again.</string>
+    <string name="error_network">Can\'t reach PayHub. Check your connection and try again.</string>
+    <string name="error_timeout">The request timed out. Please try again.</string>
+    <string name="error_unexpected">Something went wrong. Please try again.</string>
+    <string name="error_server_busy">PayHub is having trouble right now. Please try again shortly.</string>
+
+    <!-- Brand -->
+    <string name="brand_tagline">Operator console for your shop</string>
 
     <!-- Login -->
     <string name="login_title">Sign in to PayHub</string>
+    <string name="login_subtitle">PayHub Merchant — for the shopkeeper.</string>
     <string name="login_server_url">Server URL</string>
+    <string name="login_server_url_hint">Where your PayHub install is hosted (default: app.payhub.ly).</string>
     <string name="login_merchant_code">Merchant code</string>
     <string name="login_shop_code">Shop code (optional)</string>
+    <string name="login_shop_code_hint">Only if you’re signing in as a shop user.</string>
     <string name="login_username">Username</string>
     <string name="login_password">Password</string>
     <string name="login_advanced">Advanced</string>
@@ -29,13 +64,200 @@
     <!-- MFA -->
     <string name="mfa_title">Two-factor code</string>
     <string name="mfa_hint">Enter the 6-digit code from your authenticator app.</string>
+    <string name="mfa_code_label">One-time code</string>
     <string name="mfa_verify">Verify</string>
+
+    <!-- Forgot-password dialog -->
+    <string name="forgot_title">Reset password</string>
+    <string name="forgot_subtitle">We’ll send reset instructions to your email and phone.</string>
+    <string name="forgot_submit">Send reset link</string>
+    <string name="forgot_success">If that account exists, we’ve sent the reset instructions.</string>
+
+    <!-- Accept invite -->
+    <string name="invite_title">Set your password</string>
+    <string name="invite_subtitle">Pick a password for your PayHub account.</string>
+    <string name="invite_new_password">New password</string>
+    <string name="invite_confirm_password">Confirm password</string>
+    <string name="invite_mismatch">Passwords don’t match.</string>
+    <string name="invite_submit">Save password</string>
+    <string name="invite_success">Password set — you can sign in now.</string>
+    <string name="invite_bad_link">This invite link is incomplete. Open the link from your email again.</string>
+    <string name="invite_min_length">Password must be at least 12 characters.</string>
 
     <!-- Nav -->
     <string name="nav_dashboard">Dashboard</string>
     <string name="nav_paylinks">Pay-links</string>
+    <string name="nav_payments">Payments</string>
     <string name="nav_more">More</string>
+
+    <!-- Dashboard -->
+    <string name="dash_loading">Loading dashboard…</string>
+    <string name="dash_last_window">Last %1$s</string>
+    <string name="dash_window_24h">24 h</string>
+    <string name="dash_window_3d">3 d</string>
+    <string name="dash_window_7d">7 d</string>
+    <string name="dash_paid">Paid</string>
+    <string name="dash_inflight">In flight</string>
+    <string name="dash_active_links">Active links</string>
+    <string name="dash_needs_followup">Needs follow-up</string>
+    <string name="dash_by_shop">By shop</string>
+    <string name="dash_no_shop_activity">No shop activity in this window.</string>
+    <string name="dash_breakdown_unavailable">Per-shop breakdown isn’t available right now.</string>
+    <string name="dash_stat_paid">Paid</string>
+    <string name="dash_stat_volume">Volume</string>
+    <string name="dash_stat_inflight">In flight</string>
+    <string name="dash_stat_followup">Follow-up</string>
 
     <!-- Share -->
     <string name="share_paylink_chooser">Share payment link</string>
+
+    <!-- Pay-links list -->
+    <string name="pl_filter_all">All</string>
+    <string name="pl_filter_needs_followup">Needs follow-up</string>
+    <string name="pl_filter_active">Active</string>
+    <string name="pl_filter_paid">Paid</string>
+    <string name="pl_filter_expired">Expired</string>
+    <string name="pl_filter_cancelled">Cancelled</string>
+    <string name="pl_new_link">New link</string>
+    <string name="pl_loading">Loading pay-links…</string>
+    <string name="pl_empty_title">No pay-links here</string>
+    <string name="pl_empty_all_body">Create a link and share it with a customer to get paid.</string>
+    <string name="pl_empty_filter_body">Nothing matches this filter right now.</string>
+    <string name="pl_empty_action">Create a link</string>
+    <string name="pl_expires_in">expires %1$s</string>
+    <string name="pl_expired">expired</string>
+
+    <!-- Pay-link create -->
+    <string name="plc_title">New pay-link</string>
+    <string name="plc_amount_lyd">Amount (LYD)</string>
+    <string name="plc_description">Description (optional)</string>
+    <string name="plc_description_placeholder">Order #1234 — two coffees</string>
+    <string name="plc_customer_phone">Customer phone (optional)</string>
+    <string name="plc_customer_phone_hint">If you give us a number, we’ll remind the customer about the link.</string>
+    <string name="plc_methods">Payment methods (optional)</string>
+    <string name="plc_methods_hint">Leave empty to show every method configured on your account.</string>
+    <string name="plc_expires_days">Expires in (days)</string>
+    <string name="plc_order_ref">Order reference</string>
+    <string name="plc_order_ref_regenerate">New reference</string>
+    <string name="plc_order_ref_required">Order reference is required.</string>
+    <string name="plc_bad_amount">Enter a positive LYD amount.</string>
+    <string name="plc_submit">Create</string>
+    <string name="plc_creating">Creating…</string>
+    <string name="plc_success_title">Pay-link created</string>
+    <string name="plc_success_lead">Share the link with your customer over WhatsApp / SMS.</string>
+    <string name="plc_success_url">Customer link</string>
+
+    <!-- Pay-link detail -->
+    <string name="pld_title">Pay-link</string>
+    <string name="pld_field_order_ref">Order reference</string>
+    <string name="pld_field_description">Description</string>
+    <string name="pld_field_link_url">Link URL</string>
+    <string name="pld_field_expires">Expires</string>
+    <string name="pld_field_customer_attempts">Customer attempts</string>
+    <string name="pld_field_customer_attempts_value">%1$d / 5</string>
+    <string name="pld_field_extended">Extended</string>
+    <string name="pld_field_extended_value">%1$d× (last %2$s)</string>
+    <string name="pld_field_reshared">Re-shared</string>
+    <string name="pld_field_reshared_value">%1$d× (last %2$s)</string>
+    <string name="pld_field_clone_gen">Clone generation</string>
+    <string name="pld_field_created">Created</string>
+    <string name="pld_read_only_hint">Your role can view links but not change them. Ask a shop owner to act on this one.</string>
+    <string name="pld_action_reshare">Re-share</string>
+    <string name="pld_action_copy">Copy link</string>
+    <string name="pld_action_extend">Extend</string>
+    <string name="pld_action_clone">Clone</string>
+    <string name="pld_action_cancel_link">Cancel link</string>
+    <string name="pld_cancel_dialog_title">Cancel this link?</string>
+    <string name="pld_cancel_dialog_body">Customers won’t be able to pay with it anymore. This can’t be undone.</string>
+    <string name="pld_cancel_dialog_confirm">Cancel link</string>
+    <string name="pld_cancel_dialog_keep">Keep it</string>
+    <string name="pld_extend_title">Extend expiry</string>
+    <string name="pld_extend_body">Push the link’s expiry further out (capped by your install’s maximum link lifetime).</string>
+    <string name="pld_extend_1d">+ 1 day</string>
+    <string name="pld_extend_1w">+ 1 week</string>
+    <string name="pld_extend_custom_label">Custom — number of days</string>
+    <string name="pld_extend_submit">Extend</string>
+    <string name="pld_cloned_to">Cloned to %1$s</string>
+    <string name="pld_link_copied">Link copied</string>
+    <string name="pld_pay_link_label">PayHub pay-link</string>
+
+    <!-- Payments list (new) -->
+    <string name="pay_loading">Loading payments…</string>
+    <string name="pay_filter_all">All</string>
+    <string name="pay_filter_pending">Pending</string>
+    <string name="pay_filter_requires_action">Awaiting</string>
+    <string name="pay_filter_succeeded">Paid</string>
+    <string name="pay_filter_failed">Failed</string>
+    <string name="pay_filter_cancelled">Cancelled</string>
+    <string name="pay_filter_refunded">Refunded</string>
+    <string name="pay_empty_title">No payments here</string>
+    <string name="pay_empty_all_body">Payments your customers make will show up here.</string>
+    <string name="pay_empty_filter_body">Nothing matches this filter right now.</string>
+
+    <!-- Payment detail (new) -->
+    <string name="pay_detail_title">Payment</string>
+    <string name="pay_detail_field_order_ref">Order reference</string>
+    <string name="pay_detail_field_customer_mobile">Customer mobile</string>
+    <string name="pay_detail_field_created">Created</string>
+    <string name="pay_detail_field_last_update">Last update</string>
+    <string name="pay_detail_field_last_update_value">%1$s  (%2$s)</string>
+    <string name="pay_detail_view_pay_link">View pay-link</string>
+    <string name="pay_detail_events">Events</string>
+    <string name="pay_detail_no_events">No events recorded yet.</string>
+    <string name="pay_detail_metadata">Metadata</string>
+    <string name="pay_detail_copy_label">Order reference</string>
+
+    <!-- Settlements list (new) -->
+    <string name="sett_title">Settlements</string>
+    <string name="sett_loading">Loading…</string>
+    <string name="sett_empty_title">No settlement files yet</string>
+    <string name="sett_empty_body">When your PSP delivers a settlement file, it shows up here.</string>
+    <string name="sett_matched_count">%1$d/%2$d matched</string>
+    <string name="sett_mismatch_count">%1$d mismatch</string>
+
+    <!-- Settlement detail (new) -->
+    <string name="sett_detail_title">Settlement file</string>
+    <string name="sett_filter_all">All</string>
+    <string name="sett_filter_matched">Matched</string>
+    <string name="sett_filter_mismatch">Mismatch</string>
+    <string name="sett_filter_missing_hub">Missing in hub</string>
+    <string name="sett_filter_missing_psp">Missing in PSP</string>
+    <string name="sett_uploaded_ago">Uploaded %1$s</string>
+    <string name="sett_period">Period: %1$s  →  %2$s</string>
+    <string name="sett_counter_total">Total</string>
+    <string name="sett_counter_matched">Matched</string>
+    <string name="sett_counter_mismatch">Mismatch</string>
+    <string name="sett_counter_missing_hub">Missing — hub</string>
+    <string name="sett_counter_missing_psp">Missing — PSP</string>
+    <string name="sett_psp_status">PSP: %1$s</string>
+    <string name="sett_no_rows">No rows match this filter.</string>
+    <string name="sett_diff_row">%1$s — hub: %2$s · psp: %3$s</string>
+    <string name="sett_diff_more">+%1$d more</string>
+
+    <!-- More -->
+    <string name="more_title">Account</string>
+    <string name="more_loading_profile">Loading your profile…</string>
+    <string name="more_username">Username</string>
+    <string name="more_merchant">Merchant</string>
+    <string name="more_shop">Shop</string>
+    <string name="more_email">Email</string>
+    <string name="more_mobile">Mobile</string>
+    <string name="more_acting_as">acting as %1$s</string>
+    <string name="more_2fa_on">2FA on</string>
+    <string name="more_aggregator_on">Aggregator: on</string>
+    <string name="more_aggregator_off">Aggregator: off</string>
+    <string name="more_pay_link_quota">Pay-link quota: %1$s</string>
+    <string name="more_smart_routing_on">Smart routing: on</string>
+    <string name="more_dot">  ·  </string>
+    <string name="more_push_title">Push notifications</string>
+    <string name="more_push_hint">Get notified when a pay-link is paid or needs follow-up</string>
+    <string name="more_settlements">Settlements</string>
+    <string name="more_settlements_hint">Reconciliation files matched against your payments</string>
+    <string name="more_reset_pw">Request password reset</string>
+    <string name="more_reset_pw_hint">Sends reset instructions to your email and phone</string>
+    <string name="more_version">PayHub Merchant %1$s\n%2$s</string>
+
+    <!-- Misc concatenations -->
+    <string name="merchant_with_code">%1$s  ·  %2$s</string>
+    <string name="shop_subtitle_suffix">  · shop %1$s</string>
 </resources>

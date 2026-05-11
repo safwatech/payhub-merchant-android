@@ -23,9 +23,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import ly.payhub.merchant.R
 import ly.payhub.merchant.data.AppError
+import ly.payhub.merchant.data.localizedMessage
 
 @Composable
 fun LoadingBox(modifier: Modifier = Modifier, label: String? = null) {
@@ -44,7 +47,7 @@ fun LoadingBox(modifier: Modifier = Modifier, label: String? = null) {
 
 @Composable
 fun ErrorBox(error: AppError, modifier: Modifier = Modifier, onRetry: (() -> Unit)? = null) =
-    ErrorBox(message = error.message, isNetwork = error is AppError.Network, modifier = modifier, onRetry = onRetry)
+    ErrorBox(message = error.localizedMessage(), isNetwork = error is AppError.Network, modifier = modifier, onRetry = onRetry)
 
 @Composable
 fun ErrorBox(
@@ -56,10 +59,10 @@ fun ErrorBox(
     CenteredMessage(
         modifier = modifier,
         icon = if (isNetwork) Icons.Rounded.CloudOff else Icons.Rounded.ErrorOutline,
-        title = if (isNetwork) "You're offline" else "Something went wrong",
+        title = stringResource(if (isNetwork) R.string.state_offline_title else R.string.state_error_title),
         body = message,
     ) {
-        if (onRetry != null) Button(onClick = onRetry) { Text("Retry") }
+        if (onRetry != null) Button(onClick = onRetry) { Text(stringResource(R.string.action_retry)) }
     }
 }
 

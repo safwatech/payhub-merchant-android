@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ly.payhub.merchant.R
@@ -74,7 +75,7 @@ fun BrandLockup(modifier: Modifier = Modifier, tagline: String? = null) {
             contentDescription = "PayHub",
             modifier = Modifier.size(72.dp),
         )
-        Text("PayHub Merchant", style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineSmall)
         if (!tagline.isNullOrBlank()) {
             Text(
                 tagline,

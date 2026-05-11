@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -13,7 +14,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ly.payhub.merchant.R
 
 /**
  * The "Forgot password?" mini-flow — merchant code + username (+ optional shop
@@ -35,31 +38,31 @@ fun ForgotPasswordDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Reset your password") },
+        title = { Text(stringResource(R.string.forgot_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    "We'll send reset instructions to the email and phone on file.",
-                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                    stringResource(R.string.forgot_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
                 )
                 OutlinedTextField(
                     value = merchantCode,
                     onValueChange = { merchantCode = it },
-                    label = { Text("Merchant code") },
+                    label = { Text(stringResource(R.string.login_merchant_code)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it },
-                    label = { Text("Username") },
+                    label = { Text(stringResource(R.string.login_username)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 OutlinedTextField(
                     value = subCode,
                     onValueChange = { subCode = it },
-                    label = { Text("Shop code (optional)") },
+                    label = { Text(stringResource(R.string.login_shop_code)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -69,8 +72,8 @@ fun ForgotPasswordDialog(
             TextButton(
                 onClick = { onSubmit(merchantCode.trim(), username.trim(), subCode.trim().ifBlank { null }) },
                 enabled = merchantCode.isNotBlank() && username.isNotBlank(),
-            ) { Text("Send") }
+            ) { Text(stringResource(R.string.forgot_submit)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }

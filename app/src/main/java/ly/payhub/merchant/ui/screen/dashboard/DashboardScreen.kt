@@ -27,10 +27,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ly.payhub.merchant.R
 import ly.payhub.merchant.data.RawMerchantApi
 import ly.payhub.merchant.ui.components.BrandHeader
 import ly.payhub.merchant.ui.components.CounterCard
@@ -54,10 +56,8 @@ fun DashboardScreen(
         val me = state.me
         if (me != null) {
             val title = me.subMerchant?.name ?: me.merchant.name
-            val subtitle = buildString {
-                append(me.merchant.code)
-                me.subMerchant?.let { append(" · shop ${it.code}") }
-            }
+            val shopSuffix = me.subMerchant?.let { stringResource(R.string.shop_subtitle_suffix, it.code) } ?: ""
+            val subtitle = me.merchant.code + shopSuffix
             BrandHeader(
                 title = title,
                 subtitle = subtitle,
@@ -77,13 +77,13 @@ fun DashboardScreen(
                 FilterChip(
                     selected = state.window == w,
                     onClick = { viewModel.setWindow(w) },
-                    label = { Text(w.label) },
+                    label = { Text(stringResource(w.labelRes)) },
                 )
             }
         }
 
         when {
-            state.loading && state.data == null -> LoadingBox(label = "Loading dashboard…")
+            state.loading && state.data == null -> LoadingBox(label = stringResource(R.string.dash_loading))
             state.error != null && state.data == null -> ErrorBox(state.error!!, onRetry = viewModel::refresh)
             else -> PullToRefreshBox(
                 isRefreshing = state.refreshing,
@@ -101,7 +101,7 @@ private fun DashboardBody(state: DashboardUiState) {
     // The dashboard endpoint reports volume in the install's settlement currency;
     // for the Libyan market that's LYD. (No per-currency split is exposed.)
     val currency = "LYD"
-    val windowLabel = state.window.label
+    val windowLabel = stringResource(state.window.labelRes)
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -110,7 +110,7 @@ private fun DashboardBody(state: DashboardUiState) {
     ) {
         item {
             Text(
-                "Last $windowLabel",
+                stringResource(R.string.dash_last_window, windowLabel),
                 style = MaterialTheme.typography.titleMedium,
             )
         }
@@ -118,7 +118,7 @@ private fun DashboardBody(state: DashboardUiState) {
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 CounterCard(
-                    label = "Paid",
+                    label = stringResource(R.string.dash_paid),
                     value = state.paidCount.toString(),
                     subline = Money.format(state.paidVolumeMinor, currency),
                     icon = Icons.Rounded.CheckCircle,
@@ -127,7 +127,7 @@ private fun DashboardBody(state: DashboardUiState) {
                     modifier = Modifier.weight(1f),
                 )
                 CounterCard(
-                    label = "In flight",
+                    label = stringResource(R.string.dash_inflight),
                     value = state.inflight.toString(),
                     icon = Icons.Rounded.AccessTime,
                     accent = StatusColors.Pending,
@@ -139,7 +139,7 @@ private fun DashboardBody(state: DashboardUiState) {
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 CounterCard(
-                    label = "Active links",
+                    label = stringResource(R.string.dash_active_links),
                     value = state.activePayLinks.toString(),
                     icon = Icons.Rounded.Link,
                     accent = MaterialTheme.colorScheme.primary,
@@ -147,7 +147,7 @@ private fun DashboardBody(state: DashboardUiState) {
                     modifier = Modifier.weight(1f),
                 )
                 CounterCard(
-                    label = "Needs follow-up",
+                    label = stringResource(R.string.dash_needs_followup),
                     value = state.needsFollowup.toString(),
                     icon = Icons.Rounded.NotificationsActive,
                     accent = StatusColors.Negative,
@@ -166,7 +166,7 @@ private fun DashboardBody(state: DashboardUiState) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Icon(Icons.Rounded.Storefront, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("By shop", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.dash_by_shop), style = MaterialTheme.typography.titleMedium)
                 }
             }
             val rows = state.subBreakdown
@@ -174,7 +174,7 @@ private fun DashboardBody(state: DashboardUiState) {
                 rows != null && rows.isNotEmpty() -> items(rows) { row -> SubBreakdownCard(row, currency) }
                 rows != null && rows.isEmpty() -> item {
                     Text(
-                        "No shop activity in this window.",
+                        stringResource(R.string.dash_no_shop_activity),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -183,7 +183,7 @@ private fun DashboardBody(state: DashboardUiState) {
                     Text(
                         // TODO(payhub): SDK 1.1.0's MerchantDashboard has no sub_breakdown;
                         // this falls back to a raw GET — if even that fails, just say so.
-                        "Per-shop breakdown isn't available right now.",
+                        stringResource(R.string.dash_breakdown_unavailable),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -201,14 +201,14 @@ private fun SubBreakdownCard(row: RawMerchantApi.SubBreakdownRow, currency: Stri
     ) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(row.name ?: row.code ?: "Shop", style = MaterialTheme.typography.titleSmall)
+                Text(row.name ?: row.code ?: stringResource(R.string.status_shop), style = MaterialTheme.typography.titleSmall)
                 if (!row.code.isNullOrBlank()) MetaBadge(row.code!!)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Stat("Paid", "${row.paidCount}")
-                Stat("Volume", Money.format(row.paidVolumeMinor, currency))
-                Stat("In flight", "${row.inflight}")
-                Stat("Follow-up", "${row.needsFollowup}")
+                Stat(stringResource(R.string.dash_stat_paid), "${row.paidCount}")
+                Stat(stringResource(R.string.dash_stat_volume), Money.format(row.paidVolumeMinor, currency))
+                Stat(stringResource(R.string.dash_stat_inflight), "${row.inflight}")
+                Stat(stringResource(R.string.dash_stat_followup), "${row.needsFollowup}")
             }
         }
     }

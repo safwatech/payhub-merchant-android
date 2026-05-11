@@ -37,6 +37,17 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="payhub" android:host="accept-invite" />
             </intent-filter>
+
+            <!-- Pay-link push deep link: payhub://pay-link/{id}
+                 Emitted by `PayhubFirebaseMessagingService` when an FCM payload
+                 carries a `pay_link_id` — tapping the notification opens the
+                 link's detail screen (after auth if the user is signed out). -->
+            <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="payhub" android:host="pay-link" />
+            </intent-filter>
         </activity>
 
         <service

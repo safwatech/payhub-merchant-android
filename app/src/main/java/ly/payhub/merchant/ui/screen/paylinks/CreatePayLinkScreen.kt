@@ -40,12 +40,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import ly.payhub.merchant.R
 import ly.payhub.merchant.ui.theme.MonoStyle
 import ly.payhub.merchant.util.Money
 import ly.payhub.merchant.util.copyToClipboard
@@ -66,10 +68,18 @@ fun CreatePayLinkScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (state.created == null) "New pay-link" else "Link ready") },
+                title = {
+                    Text(
+                        if (state.created == null) {
+                            stringResource(R.string.plc_title)
+                        } else {
+                            stringResource(R.string.plc_success_title)
+                        },
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { if (state.created != null) onCreated() else onClose() }) {
-                        Icon(Icons.Rounded.Close, contentDescription = "Close")
+                        Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.action_close))
                     }
                 },
             )
@@ -96,7 +106,7 @@ fun CreatePayLinkScreen(
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(40.dp),
                 )
-                Text("Your pay-link is ready", style = MaterialTheme.typography.titleLarge)
+                Text(stringResource(R.string.plc_success_title), style = MaterialTheme.typography.titleLarge)
                 Text(
                     "${Money.format(created.amountMinor, created.currency)} · ${created.merchantOrderRef}",
                     style = MaterialTheme.typography.bodyMedium,
@@ -109,28 +119,33 @@ fun CreatePayLinkScreen(
                         modifier = Modifier.padding(14.dp).fillMaxWidth(),
                     )
                 }
+                val shareChooser = stringResource(R.string.share_paylink_chooser)
+                val payLinkLabel = stringResource(R.string.pld_pay_link_label)
+                val copiedToast = stringResource(R.string.pld_link_copied)
                 Button(
                     onClick = {
-                        context.shareText(created.url, "Share payment link")
+                        context.shareText(created.url, shareChooser)
                         viewModel.markShared()
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Icon(Icons.Rounded.Share, contentDescription = null)
-                    Text("  Share")
+                    Text("  " + stringResource(R.string.action_share))
                 }
                 OutlinedButton(
                     onClick = {
-                        val showToast = context.copyToClipboard("PayHub pay-link", created.url)
+                        val showToast = context.copyToClipboard(payLinkLabel, created.url)
                         viewModel.markShared()
-                        if (showToast) scope.launch { snackbarHostState.showSnackbar("Link copied") }
+                        if (showToast) scope.launch { snackbarHostState.showSnackbar(copiedToast) }
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Icon(Icons.Rounded.ContentCopy, contentDescription = null)
-                    Text("  Copy link")
+                    Text("  " + stringResource(R.string.action_copy_link))
                 }
-                OutlinedButton(onClick = onCreated, modifier = Modifier.fillMaxWidth()) { Text("Done") }
+                OutlinedButton(onClick = onCreated, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.action_done))
+                }
             }
         }
     }
@@ -138,21 +153,22 @@ fun CreatePayLinkScreen(
 
 @Composable
 private fun FormBody(state: CreatePayLinkUiState, viewModel: CreatePayLinkViewModel) {
+    val hasError = state.errorRes != null || state.error != null
     OutlinedTextField(
         value = state.amount,
         onValueChange = viewModel::onAmount,
-        label = { Text("Amount (LYD)") },
-        supportingText = { Text("e.g. 25 or 25.500 — millidinars supported") },
+        label = { Text(stringResource(R.string.plc_amount_lyd)) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
         modifier = Modifier.fillMaxWidth(),
-        isError = state.error != null,
+        isError = hasError,
     )
 
     OutlinedTextField(
         value = state.description,
         onValueChange = viewModel::onDescription,
-        label = { Text("Description (optional)") },
+        label = { Text(stringResource(R.string.plc_description)) },
+        placeholder = { Text(stringResource(R.string.plc_description_placeholder)) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         modifier = Modifier.fillMaxWidth(),
@@ -161,16 +177,16 @@ private fun FormBody(state: CreatePayLinkUiState, viewModel: CreatePayLinkViewMo
     OutlinedTextField(
         value = state.customerPhone,
         onValueChange = viewModel::onCustomerPhone,
-        label = { Text("Customer phone (optional)") },
-        supportingText = { Text("We'll send a payment reminder if the link goes unpaid") },
+        label = { Text(stringResource(R.string.plc_customer_phone)) },
+        supportingText = { Text(stringResource(R.string.plc_customer_phone_hint)) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
         modifier = Modifier.fillMaxWidth(),
     )
 
-    Text("Payment methods", style = MaterialTheme.typography.titleSmall)
+    Text(stringResource(R.string.plc_methods), style = MaterialTheme.typography.titleSmall)
     Text(
-        "Leave all unselected to let the customer choose any method.",
+        stringResource(R.string.plc_methods_hint),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
@@ -191,7 +207,7 @@ private fun FormBody(state: CreatePayLinkUiState, viewModel: CreatePayLinkViewMo
     OutlinedTextField(
         value = state.expiryDays,
         onValueChange = viewModel::onExpiryDays,
-        label = { Text("Expires in (days)") },
+        label = { Text(stringResource(R.string.plc_expires_days)) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
         modifier = Modifier.fillMaxWidth(),
@@ -200,20 +216,21 @@ private fun FormBody(state: CreatePayLinkUiState, viewModel: CreatePayLinkViewMo
     OutlinedTextField(
         value = state.orderRef,
         onValueChange = viewModel::onOrderRef,
-        label = { Text("Order reference") },
+        label = { Text(stringResource(R.string.plc_order_ref)) },
         textStyle = MonoStyle,
         singleLine = true,
         trailingIcon = {
             IconButton(onClick = viewModel::regenerateRef) {
-                Icon(Icons.Rounded.Refresh, contentDescription = "Generate a new reference")
+                Icon(Icons.Rounded.Refresh, contentDescription = stringResource(R.string.plc_order_ref_regenerate))
             }
         },
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         modifier = Modifier.fillMaxWidth(),
     )
 
-    if (state.error != null) {
-        Text(state.error!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+    val errMsg = state.errorRes?.let { stringResource(it) } ?: state.error
+    if (errMsg != null) {
+        Text(errMsg, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
     }
 
     Button(
@@ -222,7 +239,7 @@ private fun FormBody(state: CreatePayLinkUiState, viewModel: CreatePayLinkViewMo
         modifier = Modifier.fillMaxWidth(),
     ) {
         if (state.submitting) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-        else Text("Create link")
+        else Text(stringResource(R.string.plc_submit))
     }
 }
 

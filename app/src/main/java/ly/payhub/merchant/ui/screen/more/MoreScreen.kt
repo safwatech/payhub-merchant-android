@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.FactCheck
 import androidx.compose.material.icons.rounded.LockReset
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Notifications
@@ -44,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -52,6 +55,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import ly.payhub.merchant.BuildConfig
+import ly.payhub.merchant.R
 import ly.payhub.merchant.ui.components.BrandHeader
 import ly.payhub.merchant.ui.components.MetaBadge
 import ly.payhub.merchant.ui.screen.auth.ForgotPasswordDialog
@@ -60,6 +64,7 @@ import ly.payhub.merchant.util.humanizeRole
 @Composable
 fun MoreScreen(
     modifier: Modifier = Modifier,
+    onOpenSettlements: () -> Unit = {},
     viewModel: MoreViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -93,7 +98,7 @@ fun MoreScreen(
         ) {
             val me = state.me
             BrandHeader(
-                title = "Account",
+                title = stringResource(R.string.more_title),
                 subtitle = null,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             )
@@ -105,28 +110,46 @@ fun MoreScreen(
             ) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (me == null) {
-                        Text("Loading your profile…", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.more_loading_profile), style = MaterialTheme.typography.bodyMedium)
                     } else {
                         Text(me.fullName.ifBlank { me.username }, style = MaterialTheme.typography.titleMedium)
-                        ProfileRow("Username", me.username)
-                        ProfileRow("Merchant", "${me.merchant.name}  ·  ${me.merchant.code}")
-                        me.subMerchant?.let { ProfileRow("Shop", "${it.name}  ·  ${it.code}") }
-                        if (!me.email.isNullOrBlank()) ProfileRow("Email", me.email!!)
-                        if (!me.mobile.isNullOrBlank()) ProfileRow("Mobile", me.mobile!!)
+                        ProfileRow(stringResource(R.string.more_username), me.username)
+                        ProfileRow(
+                            stringResource(R.string.more_merchant),
+                            stringResource(R.string.merchant_with_code, me.merchant.name, me.merchant.code),
+                        )
+                        me.subMerchant?.let {
+                            ProfileRow(
+                                stringResource(R.string.more_shop),
+                                stringResource(R.string.merchant_with_code, it.name, it.code),
+                            )
+                        }
+                        if (!me.email.isNullOrBlank()) ProfileRow(stringResource(R.string.more_email), me.email!!)
+                        if (!me.mobile.isNullOrBlank()) ProfileRow(stringResource(R.string.more_mobile), me.mobile!!)
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             MetaBadge(humanizeRole(me.role))
-                            if (me.effectiveRole != me.role) MetaBadge("acting as ${humanizeRole(me.effectiveRole)}", prominent = true)
-                            if (me.mfaEnabled) MetaBadge("2FA on")
+                            if (me.effectiveRole != me.role) {
+                                MetaBadge(stringResource(R.string.more_acting_as, humanizeRole(me.effectiveRole)), prominent = true)
+                            }
+                            if (me.mfaEnabled) MetaBadge(stringResource(R.string.more_2fa_on))
                         }
                         HorizontalDivider(Modifier.padding(vertical = 4.dp))
+                        val aggregatorLabel = stringResource(
+                            if (me.entitlements.aggregator) R.string.more_aggregator_on else R.string.more_aggregator_off,
+                        )
+                        val quotaValue = if (me.entitlements.payLinkQuota > 0) {
+                            me.entitlements.payLinkQuota.toString()
+                        } else {
+                            stringResource(R.string.common_dash)
+                        }
+                        val quotaLabel = stringResource(R.string.more_pay_link_quota, quotaValue)
+                        val routingLabel = if (me.entitlements.smartRouting) {
+                            stringResource(R.string.more_dot) + stringResource(R.string.more_smart_routing_on)
+                        } else {
+                            ""
+                        }
                         Text(
-                            buildString {
-                                append("Aggregator: ")
-                                append(if (me.entitlements.aggregator) "on" else "off")
-                                append("  ·  Pay-link quota: ")
-                                append(if (me.entitlements.payLinkQuota > 0) me.entitlements.payLinkQuota.toString() else "—")
-                                if (me.entitlements.smartRouting) append("  ·  Smart routing: on")
-                            },
+                            "$aggregatorLabel" + stringResource(R.string.more_dot) + "$quotaLabel$routingLabel",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -156,8 +179,8 @@ fun MoreScreen(
                 }
             }
             ListItem(
-                headlineContent = { Text("Push notifications") },
-                supportingContent = { Text("Get notified when a pay-link is paid or needs follow-up") },
+                headlineContent = { Text(stringResource(R.string.more_push_title)) },
+                supportingContent = { Text(stringResource(R.string.more_push_hint)) },
                 leadingContent = { Icon(Icons.Rounded.Notifications, contentDescription = null) },
                 trailingContent = {
                     if (state.pushBusy) {
@@ -168,11 +191,27 @@ fun MoreScreen(
                 },
             )
 
+            // Settlements (read-only). Tucked here rather than the bottom nav —
+            // reconciliation reports are checked far less often than pay-links/payments.
+            ListItem(
+                modifier = Modifier.clickableRow(onClick = onOpenSettlements),
+                headlineContent = { Text(stringResource(R.string.more_settlements)) },
+                supportingContent = { Text(stringResource(R.string.more_settlements_hint)) },
+                leadingContent = { Icon(Icons.Rounded.FactCheck, contentDescription = null) },
+                trailingContent = {
+                    Icon(
+                        Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                },
+            )
+
             // Reset password.
             ListItem(
                 modifier = Modifier.clickableRow { showForgot = true },
-                headlineContent = { Text("Request password reset") },
-                supportingContent = { Text("Sends reset instructions to your email and phone") },
+                headlineContent = { Text(stringResource(R.string.more_reset_pw)) },
+                supportingContent = { Text(stringResource(R.string.more_reset_pw_hint)) },
                 leadingContent = { Icon(Icons.Rounded.LockReset, contentDescription = null) },
             )
 
@@ -182,7 +221,11 @@ fun MoreScreen(
             ListItem(
                 modifier = Modifier.clickableRow(enabled = !state.signingOut) { viewModel.signOut() },
                 headlineContent = {
-                    Text("Sign out", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        stringResource(R.string.action_sign_out),
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.SemiBold,
+                    )
                 },
                 leadingContent = {
                     if (state.signingOut) CircularProgressIndicator(Modifier.height(20.dp), strokeWidth = 2.dp)
@@ -192,7 +235,7 @@ fun MoreScreen(
 
             Spacer(Modifier.height(8.dp))
             Text(
-                "PayHub Merchant ${BuildConfig.VERSION_NAME}\n${state.serverUrl}",
+                stringResource(R.string.more_version, BuildConfig.VERSION_NAME, state.serverUrl),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,

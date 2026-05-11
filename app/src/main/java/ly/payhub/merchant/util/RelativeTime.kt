@@ -1,17 +1,34 @@
 package ly.payhub.merchant.util
 
+import android.text.format.DateUtils
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.math.abs
+import ly.payhub.merchant.R
 
 /**
- * Lightweight relative-time formatting over `java.time` — "expires in 2 days",
- * "shared 3 h ago". Available on API 24 fully (the desugaring isn't even needed
- * for `Instant`/`Duration`/`OffsetDateTime`, but `app/build.gradle.kts` keeps
- * minSdk 24 so this is safe regardless).
+ * Relative-time helpers.
+ *
+ * Two layers:
+ *
+ *  - The plain Java methods here ([until], [absolute], [shortUntil]) produce
+ *    English fallbacks suitable for logs / non-UI surfaces and for the JVM
+ *    unit tests (which can't call Android framework classes like
+ *    `android.text.format.DateUtils`).
+ *  - The `@Composable` helpers below ([rememberRelativeUntil],
+ *    [rememberAbsoluteTime]) delegate to `DateUtils`, which is locale-aware,
+ *    so an AR system locale renders "قبل ٥ د" / a Gregorian date in the
+ *    AR-LY conventions without per-call effort.
+ *
+ * Prefer the Composable helpers from Compose code; the plain methods stay for
+ * tests and non-Compose call sites.
  */
 object RelativeTime {
 
@@ -27,7 +44,7 @@ object RelativeTime {
             .getOrNull()
     }
 
-    /** "in 2 days" / "5 h ago" / "just now". Null timestamp → "—". */
+    /** "in 2 days" / "5 hours ago" / "just now". Null timestamp → "—". */
     fun until(iso: String?, now: Instant = Instant.now()): String {
         val target = parse(iso) ?: return "—"
         val d = Duration.between(now, target)
@@ -58,10 +75,10 @@ object RelativeTime {
         return target.isBefore(now)
     }
 
-    /** "10 May 2026, 14:32" in the device zone. */
+    /** "10 May 2026, 14:32" in the device zone, en-US numerals. */
     fun absolute(iso: String?): String {
         val instant = parse(iso) ?: return "—"
-        return DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm")
+        return DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.US)
             .withZone(ZoneId.systemDefault())
             .format(instant)
     }
@@ -76,4 +93,31 @@ object RelativeTime {
         secs < 5_184_000 -> "1 month"
         else -> "${secs / 2_592_000} months"
     }
+}
+
+/**
+ * Locale-aware relative time — "5 min ago" in EN, "قبل ٥ د" in AR (system locale).
+ * Returns [R.string.common_dash] for an unparseable timestamp.
+ */
+@Composable
+fun rememberRelativeUntil(iso: String?): String {
+    val target = RelativeTime.parse(iso) ?: return stringResource(R.string.common_dash)
+    return DateUtils.getRelativeTimeSpanString(
+        target.toEpochMilli(),
+        System.currentTimeMillis(),
+        DateUtils.MINUTE_IN_MILLIS,
+        DateUtils.FORMAT_ABBREV_RELATIVE,
+    ).toString()
+}
+
+/** Locale-aware "10 May 2026, 14:32" — picks the device locale + calendar conventions. */
+@Composable
+fun rememberAbsoluteTime(iso: String?): String {
+    val target = RelativeTime.parse(iso) ?: return stringResource(R.string.common_dash)
+    val ctx = LocalContext.current
+    return DateUtils.formatDateTime(
+        ctx,
+        target.toEpochMilli(),
+        DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_YEAR,
+    )
 }

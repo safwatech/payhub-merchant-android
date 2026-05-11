@@ -8,14 +8,24 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ly.payhub.merchant.R
 import ly.payhub.merchant.data.MerchantRepository
 import ly.payhub.merchant.data.asAppError
 import javax.inject.Inject
 
+/**
+ * UI state for the accept-invite screen. Two parallel error channels:
+ *  - [errorRes] for client-side validation errors we own (resource-localised).
+ *  - [error]    for server messages (English fallback — the merchant API isn't
+ *               localised yet, so we surface what the server returned verbatim).
+ *
+ * The screen picks `errorRes` first, falling back to `error`.
+ */
 data class AcceptInviteUiState(
     val password: String = "",
     val confirm: String = "",
     val submitting: Boolean = false,
+    val errorRes: Int? = null,
     val error: String? = null,
     val done: Boolean = false,
 )
@@ -28,18 +38,18 @@ class AcceptInviteViewModel @Inject constructor(
     private val _state = MutableStateFlow(AcceptInviteUiState())
     val state: StateFlow<AcceptInviteUiState> = _state.asStateFlow()
 
-    fun onPassword(v: String) = _state.update { it.copy(password = v, error = null) }
-    fun onConfirm(v: String) = _state.update { it.copy(confirm = v, error = null) }
+    fun onPassword(v: String) = _state.update { it.copy(password = v, errorRes = null, error = null) }
+    fun onConfirm(v: String) = _state.update { it.copy(confirm = v, errorRes = null, error = null) }
 
     fun submit(token: String) {
         val s = _state.value
         if (s.submitting) return
         when {
-            token.isBlank() -> { _state.update { it.copy(error = "This invitation link is incomplete.") }; return }
-            s.password.length < 12 -> { _state.update { it.copy(error = "Password must be at least 12 characters.") }; return }
-            s.password != s.confirm -> { _state.update { it.copy(error = "Passwords don't match.") }; return }
+            token.isBlank() -> { _state.update { it.copy(errorRes = R.string.invite_bad_link) }; return }
+            s.password.length < 12 -> { _state.update { it.copy(errorRes = R.string.invite_min_length) }; return }
+            s.password != s.confirm -> { _state.update { it.copy(errorRes = R.string.invite_mismatch) }; return }
         }
-        _state.update { it.copy(submitting = true, error = null) }
+        _state.update { it.copy(submitting = true, errorRes = null, error = null) }
         viewModelScope.launch {
             repo.acceptInvite(token, s.password).fold(
                 onSuccess = { _state.update { it.copy(submitting = false, done = true) } },

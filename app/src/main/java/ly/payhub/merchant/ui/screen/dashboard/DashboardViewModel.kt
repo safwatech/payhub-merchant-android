@@ -16,11 +16,15 @@ import ly.payhub.merchant.data.RawMerchantApi
 import ly.payhub.merchant.data.appError
 import javax.inject.Inject
 
-/** Selectable dashboard windows. The API caps `window_hours` at 168 (7 days). */
-enum class DashWindow(val hours: Int, val label: String) {
-    Day(24, "24h"),
-    ThreeDays(72, "3d"),
-    Week(168, "7d"),
+/**
+ * Selectable dashboard windows. The API caps `window_hours` at 168 (7 days).
+ * Labels are resolved via [labelRes] so the chips translate; long-form labels
+ * (Last 24 h / Last 7 d) are formatted on the screen.
+ */
+enum class DashWindow(val hours: Int, val labelRes: Int) {
+    Day(24, ly.payhub.merchant.R.string.dash_window_24h),
+    ThreeDays(72, ly.payhub.merchant.R.string.dash_window_3d),
+    Week(168, ly.payhub.merchant.R.string.dash_window_7d),
 }
 
 data class DashboardUiState(

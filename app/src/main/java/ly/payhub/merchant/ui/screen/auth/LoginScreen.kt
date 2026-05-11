@@ -37,6 +37,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -45,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import ly.payhub.merchant.R
 import ly.payhub.merchant.ui.components.BrandLockup
 
 @Composable
@@ -77,12 +79,12 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            BrandLockup(tagline = "Sign in to your merchant portal")
+            BrandLockup(tagline = stringResource(R.string.login_subtitle))
 
             OutlinedTextField(
                 value = state.merchantCode,
                 onValueChange = viewModel::onMerchantCode,
-                label = { Text("Merchant code") },
+                label = { Text(stringResource(R.string.login_merchant_code)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -93,8 +95,8 @@ fun LoginScreen(
             OutlinedTextField(
                 value = state.subCode,
                 onValueChange = viewModel::onSubCode,
-                label = { Text("Shop code") },
-                supportingText = { Text("Only if you sign in for a specific shop") },
+                label = { Text(stringResource(R.string.login_shop_code)) },
+                supportingText = { Text(stringResource(R.string.login_shop_code_hint)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -103,23 +105,26 @@ fun LoginScreen(
             OutlinedTextField(
                 value = state.username,
                 onValueChange = viewModel::onUsername,
-                label = { Text("Username") },
+                label = { Text(stringResource(R.string.login_username)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             )
 
+            val showPwLabel = stringResource(R.string.login_password)
             OutlinedTextField(
                 value = state.password,
                 onValueChange = viewModel::onPassword,
-                label = { Text("Password") },
+                label = { Text(showPwLabel) },
                 singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                            contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                            // The toggle's content-description doubles as both states —
+                            // a fresh key per state isn't worth it for a single icon.
+                            contentDescription = showPwLabel,
                         )
                     }
                 },
@@ -130,14 +135,14 @@ fun LoginScreen(
             // Advanced: server URL (on-prem installs).
             TextButton(onClick = viewModel::toggleAdvanced) {
                 Icon(if (state.advancedExpanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore, contentDescription = null)
-                Text("  Advanced")
+                Text("  " + stringResource(R.string.login_advanced))
             }
             AnimatedVisibility(state.advancedExpanded) {
                 OutlinedTextField(
                     value = state.serverUrl,
                     onValueChange = viewModel::onServerUrl,
-                    label = { Text("Server URL") },
-                    supportingText = { Text("Your PayHub install, e.g. https://app.payhub.ly") },
+                    label = { Text(stringResource(R.string.login_server_url)) },
+                    supportingText = { Text(stringResource(R.string.login_server_url_hint)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done),
@@ -161,11 +166,11 @@ fun LoginScreen(
                 if (state.submitting) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 } else {
-                    Text("Sign in")
+                    Text(stringResource(R.string.action_sign_in))
                 }
             }
 
-            TextButton(onClick = { showForgotDialog = true }) { Text("Forgot password?") }
+            TextButton(onClick = { showForgotDialog = true }) { Text(stringResource(R.string.login_forgot)) }
         }
     }
 

@@ -29,12 +29,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ly.payhub.merchant.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,12 +52,18 @@ fun AcceptInviteScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(state.done) { if (state.done) onDone() }
 
+    val dash = stringResource(R.string.common_dash)
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Accept invitation") },
+                title = { Text(stringResource(R.string.invite_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") }
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back),
+                        )
+                    }
                 },
             )
         },
@@ -70,42 +78,43 @@ fun AcceptInviteScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
-                "You've been invited to PayHub. Choose a password to finish setting up your account.",
+                stringResource(R.string.invite_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
             )
 
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    InfoRow("Merchant", merchantCode?.ifBlank { null } ?: "—")
-                    InfoRow("Username", username?.ifBlank { null } ?: "—")
-                    if (!subCode.isNullOrBlank()) InfoRow("Shop", subCode)
+                    InfoRow(stringResource(R.string.more_merchant), merchantCode?.ifBlank { null } ?: dash)
+                    InfoRow(stringResource(R.string.more_username), username?.ifBlank { null } ?: dash)
+                    if (!subCode.isNullOrBlank()) InfoRow(stringResource(R.string.more_shop), subCode)
                 }
             }
 
+            val hasError = state.errorRes != null || state.error != null
             OutlinedTextField(
                 value = state.password,
                 onValueChange = viewModel::onPassword,
-                label = { Text("New password") },
-                supportingText = { Text("At least 12 characters") },
+                label = { Text(stringResource(R.string.invite_new_password)) },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
                 modifier = Modifier.fillMaxWidth(),
-                isError = state.error != null,
+                isError = hasError,
             )
             OutlinedTextField(
                 value = state.confirm,
                 onValueChange = viewModel::onConfirm,
-                label = { Text("Confirm password") },
+                label = { Text(stringResource(R.string.invite_confirm_password)) },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                 modifier = Modifier.fillMaxWidth(),
-                isError = state.error != null,
+                isError = hasError,
             )
 
-            if (state.error != null) {
-                Text(state.error!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+            val errorMsg = state.errorRes?.let { stringResource(it) } ?: state.error
+            if (errorMsg != null) {
+                Text(errorMsg, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
             }
 
             Button(
@@ -114,7 +123,7 @@ fun AcceptInviteScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 if (state.submitting) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                else Text("Set password & continue")
+                else Text(stringResource(R.string.invite_submit))
             }
         }
     }

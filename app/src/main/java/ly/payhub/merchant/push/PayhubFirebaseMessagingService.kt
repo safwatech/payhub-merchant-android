@@ -48,8 +48,8 @@ class PayhubFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         val data = message.data
-        val title = message.notification?.title ?: data["title"] ?: "PayHub"
-        val body = message.notification?.body ?: data["body"] ?: "You have a new payment update."
+        val title = message.notification?.title ?: data["title"] ?: getString(R.string.push_fallback_title)
+        val body = message.notification?.body ?: data["body"] ?: getString(R.string.push_fallback_body)
         val payLinkId = data["pay_link_id"]
         showNotification(title, body, payLinkId)
     }

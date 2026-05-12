@@ -3,6 +3,74 @@
 All notable changes to the native Android merchant app. Versioning is
 independent of the PayHub server and SDK.
 
+## [0.3.0] — 2026-05-12
+
+The rest of the merchant surface a shopkeeper or parent owner needs from a phone
+— in-app account / 2FA / organisation / sub-merchant management — plus three
+pieces of "ship-ready" hardening.
+
+### Added
+- **Change password** — More → Security → Change password. Old / new (≥12-char
+  client check) / confirm; a TOTP-code field appears when 2FA is on (or on
+  `hub.merchant.mfa_required`). A 401 from a wrong old-password / wrong code is
+  surfaced inline — it is **not** treated as a session expiry, so you stay
+  signed in.
+- **Two-factor management** — More → Security → Two-factor. Enable → setup key
+  (selectable) + a client-rendered QR (`com.google.zxing:core`) → 6-digit
+  confirm; Disable → password. The More-screen 2FA badge updates via `refreshMe()`.
+- **Organisation profile** — More → Business → Organisation profile (parent
+  users). `code` / `status` / `created_at` read-only; `name`, `type`,
+  `legal_name`, `tax_number`, `commercial_register_no`, `billing_email`,
+  `support_email`, `phone`, `website`, address fields, `logo_url` editable for a
+  parent **OWNER** (client validation mirrors the server; PATCH sends only dirty
+  keys; an empty string clears).
+- **Sub-merchant & sub-user management** — More → Business → Sub-merchants
+  (parent **OWNER** with the aggregator entitlement). Create / edit / list
+  sub-merchants (delete refused while `payments_count > 0` — disable instead);
+  per sub: invite a sub-user (copyable invite link + the channel it was sent
+  on), edit role / status, disable, reissue invite, clear MFA (with the acting
+  owner's own TOTP). Last-`SUB_OWNER` and self-modify guards surface the server's
+  messages.
+- **Biometric / device-credential app lock** — More → Security → App lock.
+  When on, the app re-prompts for Face ID / fingerprint / device PIN on cold
+  start and after >2 min in the background (`androidx.biometric`,
+  `BIOMETRIC_STRONG | DEVICE_CREDENTIAL`). The toggle is disabled until a screen
+  lock is set on the device. Off by default; the choice is cleared on sign-out.
+- **Crash / error reporting** → GlitchTip (Sentry protocol). Off unless a DSN is
+  built in (`-Ppayhub.sentryDsn=…` / `PAYHUB_SENTRY_DSN`); no PII, crashes/errors
+  only, release-tagged `payhub-merchant-android@<version>`.
+
+### Changed
+- **Raw API calls now ride a transparent 401 → refresh → retry.** The `payhub-android`
+  SDK already did this for the endpoints it covers; the raw-HTTP shim (payments
+  / settlements / devices and all the screens above) didn't, so a ~30-min access-token
+  expiry mid-session logged you out. Extracted `BearerRetry`; `MerchantRepository.withAccess`
+  delegates to it (refresh de-duped behind a mutex). A 401 that survives the retry,
+  or a dead refresh token, still drops the session.
+- **`RawMerchantApi`** gains the `/merchant/auth/{change-password,mfa/*}`,
+  `/merchant/org`, and `/merchant/sub-merchants[/…/users]` endpoints + their
+  `@Serializable` models, and `httpError` is now envelope-aware (surfaces the
+  server's `error.message` for 400 / 409 / 422, falling back to FastAPI's
+  `{"detail": …}`). New `AppError.MfaRequired`.
+- **`MainActivity`** is now a `FragmentActivity` (so `BiometricPrompt` can host
+  its dialog). **`MoreScreen`** grows "Security" + (parent-only) "Business" groups.
+- New deps: `androidx.biometric`, `androidx.lifecycle:lifecycle-process`,
+  `io.sentry:sentry-android`, `com.google.zxing:core`.
+
+### Tests
+- `RawMerchantApi{Auth,Org,SubMerchants}Test`, `MerchantMeTest` — the new
+  endpoints' request shapes / decodes and the `isParentOwner` / `canManageSubs`
+  visibility matrix.
+- `BearerRetryTest` — the 401-refresh-retry policy incl. the concurrent-401
+  de-dup; `AppLockControllerTest` — the cold-start / background-timeout re-lock logic.
+
+### Known limitations
+- The account / org / sub-merchant endpoints stay raw-HTTP — fold into SDK 1.2.
+- `SUB_OWNER` cashier self-management and in-app sub-merchant API-key management
+  are still `// TODO(payhub)` (web portal only for now).
+- Crash reporting has no user-facing opt-out yet (the build-time DSN gates it).
+- Still not compiled in the authoring environment — relies on Android Studio / CI.
+
 ## [0.2.0] — 2026-05-11
 
 Phone-first surface for the most-asked-for mobile queries (payments + settlements),

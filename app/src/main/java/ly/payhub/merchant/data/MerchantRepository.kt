@@ -27,8 +27,11 @@ import java.util.concurrent.atomic.AtomicReference
  *  - publishes [authState] so the nav host can route between the auth flow and
  *    the home shell reactively.
  *
- * For `/merchant/devices` (push registration) and the per-shop dashboard
- * breakdown it delegates to [RawMerchantApi] — not in SDK 1.1.0.
+ * For the `/merchant/*` endpoints not in SDK 1.1.0 (payments, settlements,
+ * devices, the per-shop dashboard breakdown, change-password / MFA / org /
+ * sub-merchant management) it delegates to [RawMerchantApi], wrapped in
+ * [BearerRetry] so those calls get the same transparent 401 → refresh → retry
+ * the SDK does for the endpoints it covers.
  */
 class MerchantRepository(
     private val tokenStore: TokenStore,
@@ -48,6 +51,20 @@ class MerchantRepository(
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
     private val clientRef = AtomicReference(buildClient())
+
+    /**
+     * Gives the raw-shim calls the SDK's transparent "401 → refresh → retry once"
+     * behaviour. `tokenRefresh` rotates the refresh token and persists the new pair
+     * through the client's `onTokensRefreshed` (→ [TokenStore]), so no rebuild needed.
+     */
+    private val bearerRetry = BearerRetry(
+        currentAccessToken = { client().currentTokens()?.accessToken },
+        refresh = {
+            client().currentTokens()?.refreshToken
+                ?.let { rt -> runCatching { client().auth.tokenRefresh(rt) }.getOrNull()?.accessToken }
+        },
+        onAuthLoss = ::handleAuthLoss,
+    )
 
     val baseUrl: String get() = tokenStore.baseUrl
 
@@ -323,16 +340,12 @@ class MerchantRepository(
 
     /**
      * Wraps a raw-API call that needs the current bearer token. Mirrors [guarded]
-     * for the SDK path: passes the access token in (returning Unauthorized
-     * straight away if we don't have one) and trips [handleAuthLoss] on a 401.
+     * for the SDK path; the actual "no token → Unauthorized / 401 → refresh +
+     * retry once / refresh dead → [handleAuthLoss]" policy lives in [BearerRetry]
+     * so it can be unit-tested without an Android context.
      */
-    private suspend fun <T> withAccess(block: suspend (String) -> Result<T>): Result<T> {
-        val token = client().currentTokens()?.accessToken
-            ?: return Result.failure(AppErrorException(AppError.Unauthorized()))
-        val r = block(token)
-        propagateAuthLoss(r)
-        return r
-    }
+    private suspend fun <T> withAccess(block: suspend (String) -> Result<T>): Result<T> =
+        bearerRetry.execute(block)
 
     private fun <T> propagateAuthLoss(r: Result<T>) {
         if (r.appError() is AppError.Unauthorized) handleAuthLoss()

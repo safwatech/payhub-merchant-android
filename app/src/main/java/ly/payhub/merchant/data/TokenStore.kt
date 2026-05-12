@@ -69,11 +69,17 @@ class TokenStore(context: Context) {
         get() = prefs.getBoolean(KEY_PUSH_ENABLED, false)
         set(value) { prefs.edit().putBoolean(KEY_PUSH_ENABLED, value).apply() }
 
+    // ---- biometric app lock opt-in ----
+
+    var appLockEnabled: Boolean
+        get() = prefs.getBoolean(KEY_APP_LOCK, false)
+        set(value) { prefs.edit().putBoolean(KEY_APP_LOCK, value).apply() }
+
     fun clearSession() {
         // Wipe credentials but keep the base URL — a re-login on the same install
         // shouldn't have to re-type the server.
         clearTokens()
-        prefs.edit().remove(KEY_PUSH_ENABLED).apply()
+        prefs.edit().remove(KEY_PUSH_ENABLED).remove(KEY_APP_LOCK).apply()
     }
 
     private companion object {
@@ -82,5 +88,6 @@ class TokenStore(context: Context) {
         const val KEY_REFRESH = "refresh_token"
         const val KEY_BASE_URL = "base_url"
         const val KEY_PUSH_ENABLED = "push_enabled"
+        const val KEY_APP_LOCK = "app_lock_enabled"
     }
 }

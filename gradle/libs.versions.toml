@@ -16,6 +16,8 @@ securityCrypto = "1.1.0-alpha06"
 firebaseBom = "33.2.0"
 playServicesBase = "18.5.0"
 splashscreen = "1.0.1"
+biometric = "1.1.0"
+sentry = "7.14.0"
 payhubSdk = "1.1.0"
 zxing = "3.5.3"
 junit = "4.13.2"
@@ -42,6 +44,9 @@ hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt"
 hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
 hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
+androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycle" }
+sentry-android = { module = "io.sentry:sentry-android", version.ref = "sentry" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging-ktx" }
 play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }

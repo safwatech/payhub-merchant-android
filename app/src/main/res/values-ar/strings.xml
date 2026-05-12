@@ -279,6 +279,18 @@
     <string name="more_org_profile_hint">الاسم القانوني والتواصل والعنوان</string>
     <string name="more_sub_merchants">التجار الفرعيون</string>
     <string name="more_sub_merchants_hint">إدارة متاجرك الفرعية ومستخدميها</string>
+    <string name="more_app_lock">قفل التطبيق</string>
+    <string name="more_app_lock_hint">اطلب بصمة الوجه أو بصمة الإصبع أو رمز قفل جهازك لفتح التطبيق</string>
+    <string name="more_app_lock_unavailable">أعدّ قفل شاشة على هذا الجهاز أولاً</string>
+    <string name="more_app_lock_confirm">أكّد هويتك لتفعيل قفل التطبيق</string>
+
+    <!-- شاشة قفل التطبيق بالمصادقة الحيوية -->
+    <string name="lock_title">تطبيق PayHub Merchant مُقفَل</string>
+    <string name="lock_subtitle">افتح القفل ببصمة الوجه أو بصمة الإصبع أو رمز قفل جهازك للمتابعة.</string>
+    <string name="lock_unlock">فتح القفل</string>
+    <string name="lock_failed">تعذّر التحقق من هويتك. حاول مرة أخرى.</string>
+    <string name="lock_prompt_title">فتح قفل PayHub Merchant</string>
+    <string name="lock_prompt_subtitle">استخدم المصادقة الحيوية أو رمز قفل الجهاز</string>
 
     <!-- تغيير كلمة المرور -->
     <string name="changepw_title">تغيير كلمة المرور</string>

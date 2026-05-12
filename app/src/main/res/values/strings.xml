@@ -271,6 +271,18 @@
     <string name="more_org_profile_hint">Legal name, contact, address</string>
     <string name="more_sub_merchants">Sub-merchants</string>
     <string name="more_sub_merchants_hint">Manage your sub-shops and their users</string>
+    <string name="more_app_lock">App lock</string>
+    <string name="more_app_lock_hint">Require Face ID, your fingerprint, or your device PIN to open the app</string>
+    <string name="more_app_lock_unavailable">Set up a screen lock on this device first</string>
+    <string name="more_app_lock_confirm">Confirm it\'s you to turn on the app lock</string>
+
+    <!-- Biometric app lock screen -->
+    <string name="lock_title">PayHub Merchant is locked</string>
+    <string name="lock_subtitle">Unlock with Face ID, your fingerprint, or your device PIN to continue.</string>
+    <string name="lock_unlock">Unlock</string>
+    <string name="lock_failed">Couldn\'t verify it\'s you. Try again.</string>
+    <string name="lock_prompt_title">Unlock PayHub Merchant</string>
+    <string name="lock_prompt_subtitle">Use your biometrics or device PIN</string>
 
     <!-- Change password -->
     <string name="changepw_title">Change password</string>

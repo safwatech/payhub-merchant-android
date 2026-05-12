@@ -21,6 +21,12 @@ if (file("google-services.json").exists()) {
 
 val appVersionName = file("../VERSION").takeIf { it.exists() }?.readText()?.trim() ?: "0.1.0"
 
+// Crash-reporting DSN (GlitchTip / Sentry). Empty by default ⇒ the SDK is a
+// graceful no-op; the vendor sets it at build time via `-Ppayhub.sentryDsn=…`
+// or the PAYHUB_SENTRY_DSN env var. See PayhubMerchantApp / docs/mobile-app.md.
+val sentryDsn = (project.findProperty("payhub.sentryDsn") as String?)
+    ?: System.getenv("PAYHUB_SENTRY_DSN") ?: ""
+
 android {
     namespace = "ly.payhub.merchant"
     compileSdk = 34
@@ -33,6 +39,7 @@ android {
         versionName = appVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
+        buildConfigField("String", "SENTRY_DSN", "\"$sentryDsn\"")
     }
 
     // Optional release signing: reads keystore.properties (gitignored) if present,
@@ -120,6 +127,12 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
 
     implementation(libs.androidx.security.crypto)
+    implementation(libs.androidx.biometric)
+    implementation(libs.androidx.lifecycle.process)
+
+    // Crash / error reporting → GlitchTip (Sentry protocol). No-op until a DSN is
+    // built in (see `payhub.sentryDsn` / PAYHUB_SENTRY_DSN below).
+    implementation(libs.sentry.android)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)

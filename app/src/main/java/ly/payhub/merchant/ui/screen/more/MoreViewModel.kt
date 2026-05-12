@@ -14,6 +14,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import ly.payhub.MerchantMe
 import ly.payhub.merchant.data.MerchantRepository
 import ly.payhub.merchant.data.asAppError
+import ly.payhub.merchant.ui.lock.AppLockController
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -21,6 +22,7 @@ data class MoreUiState(
     val me: MerchantMe? = null,
     val pushEnabled: Boolean = false,
     val pushBusy: Boolean = false,
+    val appLockEnabled: Boolean = false,
     val signingOut: Boolean = false,
     val serverUrl: String = "",
     val message: String? = null,
@@ -29,10 +31,16 @@ data class MoreUiState(
 @HiltViewModel
 class MoreViewModel @Inject constructor(
     private val repo: MerchantRepository,
+    private val appLock: AppLockController,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
-        MoreUiState(me = repo.currentMe, pushEnabled = repo.pushEnabled, serverUrl = repo.baseUrl),
+        MoreUiState(
+            me = repo.currentMe,
+            pushEnabled = repo.pushEnabled,
+            appLockEnabled = appLock.isEnabled,
+            serverUrl = repo.baseUrl,
+        ),
     )
     val state: StateFlow<MoreUiState> = _state.asStateFlow()
 
@@ -78,6 +86,22 @@ class MoreViewModel @Inject constructor(
                 onFailure = { t ->
                     _state.update { it.copy(pushBusy = false, message = t.asAppError().message) }
                 },
+            )
+        }
+    }
+
+    /**
+     * Flip the biometric app lock. The screen is responsible for confirming with a
+     * `BiometricPrompt` *before* turning it on (so the user proves they can unlock);
+     * we just persist the choice. Turning it on counts as a fresh unlock — no lock
+     * screen pops up mid-session.
+     */
+    fun setAppLock(enabled: Boolean) {
+        appLock.setEnabled(enabled)
+        _state.update {
+            it.copy(
+                appLockEnabled = enabled,
+                message = if (enabled) "App lock on" else "App lock off",
             )
         }
     }

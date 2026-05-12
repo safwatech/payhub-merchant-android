@@ -1,7 +1,6 @@
 package ly.payhub.merchant
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,20 +9,26 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import ly.payhub.merchant.data.MerchantRepository
 import ly.payhub.merchant.ui.AppNavHost
+import ly.payhub.merchant.ui.lock.AppLockController
+import ly.payhub.merchant.ui.lock.AppLockScreen
 import ly.payhub.merchant.ui.theme.PayHubMerchantTheme
 import javax.inject.Inject
 
+// FragmentActivity (not ComponentActivity) so androidx.biometric's BiometricPrompt
+// — which needs a FragmentActivity to host its dialog fragment — can run here.
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
 
     // Injected only so the repository (and its AuthState bootstrap) is alive as
     // early as possible — the splash screen waits on it.
     @Inject lateinit var repository: MerchantRepository
+    @Inject lateinit var appLock: AppLockController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splash = installSplashScreen()
@@ -49,11 +54,17 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController = rememberNavController()
                     val authState by repository.authState.collectAsStateWithLifecycle()
-                    AppNavHost(
-                        navController = navController,
-                        authState = authState,
-                        initialDeepLink = initialUri,
-                    )
+                    val locked by appLock.locked.collectAsStateWithLifecycle()
+                    val showLock = locked && authState is MerchantRepository.AuthState.Authenticated
+                    if (showLock) {
+                        AppLockScreen(onUnlocked = { appLock.markUnlocked() })
+                    } else {
+                        AppNavHost(
+                            navController = navController,
+                            authState = authState,
+                            initialDeepLink = initialUri,
+                        )
+                    }
                 }
             }
         }

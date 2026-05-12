@@ -1,10 +1,15 @@
 package ly.payhub.merchant.ui.screen.more
 
 import android.Manifest
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricManager.Authenticators
+import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Business
 import androidx.compose.material.icons.rounded.FactCheck
+import androidx.compose.material.icons.rounded.Fingerprint
 import androidx.compose.material.icons.rounded.LockReset
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Notifications
@@ -55,6 +61,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
@@ -80,6 +87,30 @@ fun MoreScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    // Biometric app lock — is a credential (biometric or device PIN/pattern/password) enrolled?
+    val appLockSupported = remember(context) {
+        BiometricManager.from(context)
+            .canAuthenticate(Authenticators.BIOMETRIC_STRONG or Authenticators.DEVICE_CREDENTIAL) ==
+            BiometricManager.BIOMETRIC_SUCCESS
+    }
+    val appLockPromptTitle = stringResource(R.string.lock_prompt_title)
+    val appLockPromptSubtitle = stringResource(R.string.more_app_lock_confirm)
+
+    // Turning the lock ON: confirm the user can authenticate before persisting it.
+    fun onAppLockToggle(wantOn: Boolean) {
+        if (!wantOn) { viewModel.setAppLock(false); return }
+        val activity = context.findFragmentActivity() ?: run { viewModel.setAppLock(true); return }
+        val callback = object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) = viewModel.setAppLock(true)
+        }
+        val info = BiometricPrompt.PromptInfo.Builder()
+            .setTitle(appLockPromptTitle)
+            .setSubtitle(appLockPromptSubtitle)
+            .setAllowedAuthenticators(Authenticators.BIOMETRIC_STRONG or Authenticators.DEVICE_CREDENTIAL)
+            .build()
+        BiometricPrompt(activity, ContextCompat.getMainExecutor(context), callback).authenticate(info)
+    }
 
     var showForgot by rememberSaveable { mutableStateOf(false) }
     // Set when the user toggles push ON and we still need permission; the launcher result resolves it.
@@ -234,6 +265,21 @@ fun MoreScreen(
                 leadingContent = { Icon(Icons.Rounded.Security, contentDescription = null) },
                 trailingContent = { ChevronEnd() },
             )
+            // Biometric / device-credential app lock.
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.more_app_lock)) },
+                supportingContent = {
+                    Text(stringResource(if (appLockSupported) R.string.more_app_lock_hint else R.string.more_app_lock_unavailable))
+                },
+                leadingContent = { Icon(Icons.Rounded.Fingerprint, contentDescription = null) },
+                trailingContent = {
+                    Switch(
+                        checked = state.appLockEnabled && appLockSupported,
+                        enabled = appLockSupported,
+                        onCheckedChange = { onAppLockToggle(it) },
+                    )
+                },
+            )
             // "Reset password" (the forgot-password mini-flow) — for when you've forgotten it.
             ListItem(
                 modifier = Modifier.clickableRow { showForgot = true },
@@ -334,3 +380,9 @@ private fun ChevronEnd() {
 
 private fun Modifier.clickableRow(enabled: Boolean = true, onClick: () -> Unit): Modifier =
     this.clickable(enabled = enabled, onClick = onClick)
+
+private tailrec fun Context.findFragmentActivity(): FragmentActivity? = when (this) {
+    is FragmentActivity -> this
+    is ContextWrapper -> baseContext.findFragmentActivity()
+    else -> null
+}

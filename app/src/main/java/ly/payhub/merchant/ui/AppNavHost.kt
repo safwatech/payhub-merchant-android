@@ -16,14 +16,20 @@ import androidx.navigation.navArgument
 import ly.payhub.merchant.data.MerchantRepository.AuthState
 import ly.payhub.merchant.ui.screen.HomeScreen
 import ly.payhub.merchant.ui.screen.SplashScreen
+import ly.payhub.merchant.ui.screen.account.ChangePasswordScreen
+import ly.payhub.merchant.ui.screen.account.MfaSettingsScreen
 import ly.payhub.merchant.ui.screen.auth.AcceptInviteScreen
 import ly.payhub.merchant.ui.screen.auth.LoginScreen
 import ly.payhub.merchant.ui.screen.auth.MfaScreen
+import ly.payhub.merchant.ui.screen.org.OrgProfileScreen
 import ly.payhub.merchant.ui.screen.payments.PaymentDetailScreen
 import ly.payhub.merchant.ui.screen.paylinks.CreatePayLinkScreen
 import ly.payhub.merchant.ui.screen.paylinks.PayLinkDetailScreen
 import ly.payhub.merchant.ui.screen.settlements.SettlementDetailScreen
 import ly.payhub.merchant.ui.screen.settlements.SettlementsScreen
+import ly.payhub.merchant.ui.screen.submerchants.SubMerchantDetailScreen
+import ly.payhub.merchant.ui.screen.submerchants.SubMerchantsScreen
+import ly.payhub.merchant.ui.screen.submerchants.SubUsersScreen
 
 /**
  * Single source of truth for the screen graph.
@@ -56,11 +62,19 @@ object Routes {
     const val PAYMENT_DETAIL = "payments/{id}"
     const val SETTLEMENTS = "settlements"
     const val SETTLEMENT_DETAIL = "settlements/{id}"
+    const val CHANGE_PASSWORD = "account/change-password"
+    const val MFA_SETTINGS = "account/mfa"
+    const val ORG_PROFILE = "org"
+    const val SUB_MERCHANTS = "sub-merchants"
+    const val SUB_MERCHANT_DETAIL = "sub-merchants/{id}"
+    const val SUB_USERS = "sub-merchants/{id}/users"
 
     fun mfa(challengeToken: String) = "mfa/${Uri.encode(challengeToken)}"
     fun payLinkDetail(id: String) = "pay-links/${Uri.encode(id)}"
     fun paymentDetail(id: String) = "payments/${Uri.encode(id)}"
     fun settlementDetail(id: String) = "settlements/${Uri.encode(id)}"
+    fun subMerchantDetail(id: String) = "sub-merchants/${Uri.encode(id)}"
+    fun subUsers(id: String) = "sub-merchants/${Uri.encode(id)}/users"
     fun acceptInvite(token: String, m: String?, u: String?, s: String?): String {
         val q = buildList {
             add("token=${Uri.encode(token)}")
@@ -142,7 +156,10 @@ fun AppNavHost(
                 val inHomeZone = current?.startsWith("home") == true ||
                     current?.startsWith("pay-links/") == true ||
                     current?.startsWith("payments/") == true ||
-                    current?.startsWith("settlements") == true
+                    current?.startsWith("settlements") == true ||
+                    current?.startsWith("account/") == true ||
+                    current == "org" ||
+                    current?.startsWith("sub-merchants") == true
                 if (!inHomeZone) navController.switchTo(Routes.HOME)
 
                 // Replay a parked pay-link deep-link, then forget it.
@@ -202,6 +219,10 @@ fun AppNavHost(
                 onOpenPayLink = { id -> navController.navigate(Routes.payLinkDetail(id)) },
                 onOpenPayment = { id -> navController.navigate(Routes.paymentDetail(id)) },
                 onOpenSettlements = { navController.navigate(Routes.SETTLEMENTS) },
+                onOpenChangePassword = { navController.navigate(Routes.CHANGE_PASSWORD) },
+                onOpenMfaSettings = { navController.navigate(Routes.MFA_SETTINGS) },
+                onOpenOrgProfile = { navController.navigate(Routes.ORG_PROFILE) },
+                onOpenSubMerchants = { navController.navigate(Routes.SUB_MERCHANTS) },
             )
         }
 
@@ -255,6 +276,52 @@ fun AppNavHost(
                 onOpenPayment = { id ->
                     navController.navigate(Routes.paymentDetail(id)) { launchSingleTop = true }
                 },
+            )
+        }
+
+        // ---- account / org / sub-merchant management ----
+
+        composable(Routes.CHANGE_PASSWORD) {
+            ChangePasswordScreen(
+                onBack = { navController.popBackStack() },
+                onDone = { navController.popBackStack() },
+            )
+        }
+
+        composable(Routes.MFA_SETTINGS) {
+            MfaSettingsScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.ORG_PROFILE) {
+            OrgProfileScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.SUB_MERCHANTS) {
+            SubMerchantsScreen(
+                onBack = { navController.popBackStack() },
+                onOpen = { id -> navController.navigate(Routes.subMerchantDetail(id)) },
+            )
+        }
+
+        composable(
+            Routes.SUB_MERCHANT_DETAIL,
+            arguments = listOf(navArgument("id") { type = NavType.StringType }),
+        ) { backStack ->
+            SubMerchantDetailScreen(
+                subId = backStack.arguments?.getString("id").orEmpty(),
+                onBack = { navController.popBackStack() },
+                onDeleted = { navController.popBackStack() },
+                onOpenUsers = { id -> navController.navigate(Routes.subUsers(id)) },
+            )
+        }
+
+        composable(
+            Routes.SUB_USERS,
+            arguments = listOf(navArgument("id") { type = NavType.StringType }),
+        ) { backStack ->
+            SubUsersScreen(
+                subId = backStack.arguments?.getString("id").orEmpty(),
+                onBack = { navController.popBackStack() },
             )
         }
     }

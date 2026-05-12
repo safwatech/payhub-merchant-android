@@ -7,6 +7,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -33,6 +34,12 @@ import kotlin.coroutines.resumeWithException
  *  - `GET    /merchant/payments/{id}`            — payment detail + events + metadata
  *  - `GET    /merchant/settlements`              — settlement files list
  *  - `GET    /merchant/settlements/{id}/rows`    — per-file reconciliation rows
+ *  - `POST   /merchant/auth/change-password`     — change the account password
+ *  - `POST   /merchant/auth/mfa/{enrol,confirm,disable}` — two-factor management
+ *  - `GET/PATCH /merchant/org`                   — organisation-profile view/edit
+ *  - `GET/POST /merchant/sub-merchants`, `GET/PATCH/DELETE /merchant/sub-merchants/{id}`
+ *  - `GET/POST /merchant/sub-merchants/{sid}/users`, `PATCH/DELETE .../users/{uid}`,
+ *    `POST .../users/{uid}/{reissue-invite,clear-mfa}` — sub-user management
  *
  * The Pydantic response models are mirrored 1:1 below — field names match the
  * server JSON via `@SerialName`. Extra server fields are tolerated
@@ -40,7 +47,7 @@ import kotlin.coroutines.resumeWithException
  * client.
  *
  * TODO(payhub): drop these once SDK 1.2 ships `payments`, `settlements`,
- * `devices`, and sub-breakdown support.
+ * `devices`, sub-breakdown, account/MFA, org and sub-merchant management.
  */
 class RawMerchantApi(private val httpClient: OkHttpClient) {
 
@@ -79,7 +86,7 @@ class RawMerchantApi(private val httpClient: OkHttpClient) {
                 val resp = httpClient.newCall(req).await()
                 resp.use {
                     val text = it.body?.string().orEmpty()
-                    if (it.code !in 200..299) throw httpError(it.code)
+                    if (it.code !in 200..299) throw httpError(it.code, text)
                     json.decodeFromString<SubBreakdownResponse>(text)
                 }
             }
@@ -134,6 +141,122 @@ class RawMerchantApi(private val httpClient: OkHttpClient) {
         b.addQueryParameter("offset", clamp(offset, 0, Int.MAX_VALUE).toString())
     }
 
+    // ---------------------------------------------------------------- account / MFA (raw — SDK 1.2)
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun changePassword(
+        baseUrl: String,
+        accessToken: String,
+        oldPassword: String,
+        newPassword: String,
+        code: String?,
+    ): Result<Unit> = postUnit(
+        baseUrl, accessToken, "/merchant/auth/change-password",
+        json.encodeToString(ChangePasswordBody(oldPassword = oldPassword, newPassword = newPassword, code = code)),
+    )
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun mfaEnrol(baseUrl: String, accessToken: String): Result<MfaEnrol> =
+        postJson(baseUrl, accessToken, "/merchant/auth/mfa/enrol")
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun mfaConfirm(baseUrl: String, accessToken: String, code: String): Result<Unit> =
+        postUnit(baseUrl, accessToken, "/merchant/auth/mfa/confirm", json.encodeToString(CodeBody(code)))
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun mfaDisable(baseUrl: String, accessToken: String, password: String): Result<Unit> =
+        postUnit(baseUrl, accessToken, "/merchant/auth/mfa/disable", json.encodeToString(PasswordBody(password)))
+
+    // ---------------------------------------------------------------- organisation profile (raw — SDK 1.2)
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun getOrg(baseUrl: String, accessToken: String): Result<OrgInfo> =
+        getJson(baseUrl, accessToken, "/merchant/org") { }
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun updateOrg(baseUrl: String, accessToken: String, patch: OrgPatch): Result<OrgInfo> =
+        patchJson(baseUrl, accessToken, "/merchant/org", json.encodeToString(patch))
+
+    // ---------------------------------------------------------------- sub-merchants (raw — SDK 1.2)
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun listSubMerchants(baseUrl: String, accessToken: String): Result<List<SubMerchant>> =
+        getJson(baseUrl, accessToken, "/merchant/sub-merchants") { }
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun getSubMerchant(baseUrl: String, accessToken: String, id: String): Result<SubMerchant> =
+        getJson(baseUrl, accessToken, "/merchant/sub-merchants/$id") { }
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun createSubMerchant(baseUrl: String, accessToken: String, body: SubMerchantCreate): Result<SubMerchant> =
+        postJson(baseUrl, accessToken, "/merchant/sub-merchants", json.encodeToString(body))
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun updateSubMerchant(
+        baseUrl: String,
+        accessToken: String,
+        id: String,
+        body: SubMerchantPatch,
+    ): Result<SubMerchant> =
+        patchJson(baseUrl, accessToken, "/merchant/sub-merchants/$id", json.encodeToString(body))
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun deleteSubMerchant(baseUrl: String, accessToken: String, id: String): Result<Unit> =
+        deleteUnit(baseUrl, accessToken, "/merchant/sub-merchants/$id")
+
+    // ---------------------------------------------------------------- sub-users (raw — SDK 1.2)
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun listSubUsers(baseUrl: String, accessToken: String, subId: String): Result<List<SubUser>> =
+        getJson(baseUrl, accessToken, "/merchant/sub-merchants/$subId/users") { }
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun createSubUser(
+        baseUrl: String,
+        accessToken: String,
+        subId: String,
+        body: SubUserCreate,
+    ): Result<SubUserCreated> =
+        postJson(baseUrl, accessToken, "/merchant/sub-merchants/$subId/users", json.encodeToString(body))
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun updateSubUser(
+        baseUrl: String,
+        accessToken: String,
+        subId: String,
+        uid: String,
+        body: SubUserPatch,
+    ): Result<SubUser> =
+        patchJson(baseUrl, accessToken, "/merchant/sub-merchants/$subId/users/$uid", json.encodeToString(body))
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun disableSubUser(
+        baseUrl: String,
+        accessToken: String,
+        subId: String,
+        uid: String,
+    ): Result<Unit> = deleteUnit(baseUrl, accessToken, "/merchant/sub-merchants/$subId/users/$uid")
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun reissueSubUserInvite(
+        baseUrl: String,
+        accessToken: String,
+        subId: String,
+        uid: String,
+    ): Result<ReissueInvite> =
+        postJson(baseUrl, accessToken, "/merchant/sub-merchants/$subId/users/$uid/reissue-invite")
+
+    // TODO(payhub): fold into SDK 1.2
+    suspend fun clearSubUserMfa(
+        baseUrl: String,
+        accessToken: String,
+        subId: String,
+        uid: String,
+        code: String,
+    ): Result<Unit> = postUnit(
+        baseUrl, accessToken, "/merchant/sub-merchants/$subId/users/$uid/clear-mfa", json.encodeToString(CodeBody(code)),
+    )
+
     // ---------------------------------------------------------------- internals
 
     private suspend inline fun <reified T> getJson(
@@ -153,8 +276,69 @@ class RawMerchantApi(private val httpClient: OkHttpClient) {
             val resp = httpClient.newCall(req).await()
             resp.use {
                 val text = it.body?.string().orEmpty()
-                if (it.code !in 200..299) throw httpError(it.code)
+                if (it.code !in 200..299) throw httpError(it.code, text)
                 json.decodeFromString<T>(text)
+            }
+        }
+    }
+
+    /** `POST <path>` with a JSON body (null → `{}`), decoding the response into [T]. */
+    private suspend inline fun <reified T> postJson(
+        baseUrl: String,
+        accessToken: String,
+        path: String,
+        body: String = "{}",
+    ): Result<T> = bodyMethod(baseUrl, accessToken, path, body) { req, b -> req.post(b) }
+        .mapCatching { json.decodeFromString<T>(it) }
+
+    /** `PATCH <path>` with a JSON body, decoding the response into [T]. */
+    private suspend inline fun <reified T> patchJson(
+        baseUrl: String,
+        accessToken: String,
+        path: String,
+        body: String,
+    ): Result<T> = bodyMethod(baseUrl, accessToken, path, body) { req, b -> req.patch(b) }
+        .mapCatching { json.decodeFromString<T>(it) }
+
+    /** `POST <path>` expecting an empty (204) response. */
+    private suspend fun postUnit(
+        baseUrl: String,
+        accessToken: String,
+        path: String,
+        body: String = "{}",
+    ): Result<Unit> = bodyMethod(baseUrl, accessToken, path, body) { req, b -> req.post(b) }.map { }
+
+    /** `DELETE <path>` (optional body) expecting an empty (204) response. */
+    private suspend fun deleteUnit(
+        baseUrl: String,
+        accessToken: String,
+        path: String,
+        body: String? = null,
+    ): Result<Unit> = bodyMethod(baseUrl, accessToken, path, body) { req, b ->
+        if (body == null) req.delete() else req.delete(b)
+    }.map { }
+
+    /** Fire `method` with `body` (JSON), status-check, and return the response text. */
+    private suspend fun bodyMethod(
+        baseUrl: String,
+        accessToken: String,
+        path: String,
+        body: String?,
+        method: (Request.Builder, okhttp3.RequestBody) -> Request.Builder,
+    ): Result<String> = runCatchingApp {
+        withContext(Dispatchers.IO) {
+            val req = method(
+                Request.Builder().url("${baseUrl.trimEnd('/')}$path"),
+                (body ?: "").toRequestBody(JSON),
+            )
+                .header("Accept", "application/json")
+                .header("Authorization", "Bearer $accessToken")
+                .build()
+            val resp = httpClient.newCall(req).await()
+            resp.use {
+                val text = it.body?.string().orEmpty()
+                if (it.code !in 200..299) throw httpError(it.code, text)
+                text
             }
         }
     }
@@ -171,18 +355,55 @@ class RawMerchantApi(private val httpClient: OkHttpClient) {
                 .build()
             val resp = httpClient.newCall(req).await()
             resp.use {
-                if (it.code !in 200..299) throw httpError(it.code)
+                val text = it.body?.string().orEmpty()
+                if (it.code !in 200..299) throw httpError(it.code, text)
             }
         }
     }
 
-    private fun httpError(status: Int): RuntimeException = when (status) {
-        401 -> AppErrorException(AppError.Unauthorized())
-        403 -> AppErrorException(AppError.Forbidden())
-        404 -> AppErrorException(AppError.NotFound())
-        in 500..599 -> AppErrorException(AppError.Unexpected("PayHub is having trouble right now."))
-        else -> AppErrorException(AppError.Unexpected("Request failed (HTTP $status)."))
+    /**
+     * Map a non-2xx response to a typed [AppError], parsing the error envelope
+     * (`{"error":{"code","message","details"}}`, FastAPI's `{"detail":...}`, or
+     * a generic `"HTTP <status>"`). Note the 401 special-cases: a 401 from
+     * change-password / mfa-confirm / clear-mfa is **not** a session expiry —
+     * `hub.merchant.mfa_required` becomes [AppError.MfaRequired] and
+     * `hub.merchant.bad_mfa` / `hub.merchant.bad_credentials` become
+     * [AppError.Invalid], so the caller re-prompts rather than logging out.
+     */
+    private fun httpError(status: Int, body: String): RuntimeException {
+        val (code, message) = parseServerMessage(body, status)
+        return when (status) {
+            401 -> when (code) {
+                "hub.merchant.mfa_required" -> AppErrorException(AppError.MfaRequired(message))
+                "hub.merchant.bad_mfa", "hub.merchant.bad_credentials" -> AppErrorException(AppError.Invalid(message))
+                else -> AppErrorException(AppError.Unauthorized())
+            }
+            403 -> AppErrorException(AppError.Forbidden(message))
+            404 -> AppErrorException(AppError.NotFound(message))
+            400, 409, 422 -> AppErrorException(AppError.Invalid(message))
+            429 -> AppErrorException(AppError.RateLimited())
+            in 500..599 -> AppErrorException(AppError.Unexpected("PayHub is having trouble right now."))
+            else -> AppErrorException(AppError.Unexpected("Request failed (HTTP $status)."))
+        }
     }
+
+    /** `(code?, message)` parsed from the server error body, tolerating non-JSON. */
+    private fun parseServerMessage(body: String, status: Int): Pair<String?, String> {
+        val fallback = "HTTP $status"
+        val root = runCatching { json.parseToJsonElement(body).jsonObject }.getOrNull() ?: return null to fallback
+        (root["error"] as? JsonObject)?.let { err ->
+            val code = (err["code"])?.scalarString()
+            val message = (err["message"])?.scalarString()
+            return code to (message ?: code ?: fallback)
+        }
+        (root["detail"])?.scalarString()?.let { return null to it }
+        return null to fallback
+    }
+
+    private fun kotlinx.serialization.json.JsonElement.scalarString(): String? =
+        (this as? kotlinx.serialization.json.JsonPrimitive)
+            ?.let { runCatching { it.content }.getOrNull() }
+            ?.takeIf { it.isNotBlank() }
 
     private fun clamp(v: Int, lo: Int, hi: Int): Int = v.coerceIn(lo, hi)
 
@@ -193,6 +414,19 @@ class RawMerchantApi(private val httpClient: OkHttpClient) {
 
     @Serializable
     private data class TokenBody(val token: String)
+
+    @Serializable
+    private data class ChangePasswordBody(
+        @SerialName("old_password") val oldPassword: String,
+        @SerialName("new_password") val newPassword: String,
+        val code: String? = null,
+    )
+
+    @Serializable
+    private data class CodeBody(val code: String)
+
+    @Serializable
+    private data class PasswordBody(val password: String)
 
     // ---------------------------------------------------------------- response models
 
@@ -296,6 +530,171 @@ class RawMerchantApi(private val httpClient: OkHttpClient) {
         val status: String,
         val diff: JsonObject = JsonObject(emptyMap()),
         @SerialName("created_at") val createdAt: String,
+    )
+
+    // ---------------------------------------------------------------- account / MFA / org / sub-merchants models
+
+    /** Mirrors `app/api/merchant/mfa.py::EnrolOut`. */
+    @Serializable
+    data class MfaEnrol(
+        val secret: String,
+        @SerialName("otpauth_uri") val otpauthUri: String,
+        val issuer: String = "",
+        val account: String = "",
+    )
+
+    /** Mirrors `app/api/merchant/org.py::OrgOut`. */
+    @Serializable
+    data class OrgInfo(
+        val id: String,
+        val code: String,
+        val name: String,
+        val type: String,
+        val status: String = "",
+        @SerialName("created_at") val createdAt: String = "",
+        @SerialName("legal_name") val legalName: String? = null,
+        @SerialName("tax_number") val taxNumber: String? = null,
+        @SerialName("commercial_register_no") val commercialRegisterNo: String? = null,
+        @SerialName("billing_email") val billingEmail: String? = null,
+        @SerialName("support_email") val supportEmail: String? = null,
+        val phone: String? = null,
+        val website: String? = null,
+        @SerialName("address_line_1") val addressLine1: String? = null,
+        @SerialName("address_line_2") val addressLine2: String? = null,
+        val city: String? = null,
+        val country: String? = null,
+        @SerialName("logo_url") val logoUrl: String? = null,
+    )
+
+    /**
+     * `PATCH /merchant/org` body. A true partial patch: because [json] has
+     * `explicitNulls = false`, only non-null fields are serialised, so the
+     * caller sets a field to `""` to clear it (server coerces `""` → `null`),
+     * to a new value to change it, or leaves it `null` to omit it.
+     */
+    @Serializable
+    data class OrgPatch(
+        val name: String? = null,
+        val type: String? = null,
+        @SerialName("legal_name") val legalName: String? = null,
+        @SerialName("tax_number") val taxNumber: String? = null,
+        @SerialName("commercial_register_no") val commercialRegisterNo: String? = null,
+        @SerialName("billing_email") val billingEmail: String? = null,
+        @SerialName("support_email") val supportEmail: String? = null,
+        val phone: String? = null,
+        val website: String? = null,
+        @SerialName("address_line_1") val addressLine1: String? = null,
+        @SerialName("address_line_2") val addressLine2: String? = null,
+        val city: String? = null,
+        val country: String? = null,
+        @SerialName("logo_url") val logoUrl: String? = null,
+    )
+
+    /** Mirrors `app/api/merchant/sub_merchants.py::SubMerchantOut`. */
+    @Serializable
+    data class SubMerchant(
+        val id: String,
+        @SerialName("merchant_id") val merchantId: String = "",
+        val code: String,
+        @SerialName("code_prefix") val codePrefix: String,
+        val name: String,
+        val status: String,
+        @SerialName("external_ref") val externalRef: String? = null,
+        val metadata: JsonObject = JsonObject(emptyMap()),
+        @SerialName("created_at") val createdAt: String = "",
+        @SerialName("updated_at") val updatedAt: String = "",
+        @SerialName("payments_count") val paymentsCount: Int = 0,
+    )
+
+    @Serializable
+    data class SubMerchantCreate(
+        val code: String,
+        @SerialName("code_prefix") val codePrefix: String,
+        val name: String,
+        val status: String = "active",
+        @SerialName("external_ref") val externalRef: String? = null,
+    )
+
+    @Serializable
+    data class SubMerchantPatch(
+        val name: String? = null,
+        val status: String? = null,
+        @SerialName("external_ref") val externalRef: String? = null,
+    )
+
+    /** Mirrors `app/api/merchant/sub_merchants.py::SubUserOut`. */
+    @Serializable
+    data class SubUser(
+        val id: String,
+        @SerialName("sub_merchant_id") val subMerchantId: String = "",
+        val username: String,
+        val role: String,
+        val status: String,
+        @SerialName("full_name") val fullName: String = "",
+        val email: String? = null,
+        val mobile: String? = null,
+        val phone: String? = null,
+        @SerialName("mfa_enabled") val mfaEnabled: Boolean = false,
+        @SerialName("last_login_at") val lastLoginAt: String? = null,
+        @SerialName("created_at") val createdAt: String = "",
+    )
+
+    @Serializable
+    data class SubUserCreate(
+        val username: String,
+        @SerialName("full_name") val fullName: String,
+        val email: String? = null,
+        val mobile: String? = null,
+        val phone: String? = null,
+        val role: String = "sub_operator",
+    )
+
+    /**
+     * `POST .../users` response — a [SubUser] plus the freshly minted invite
+     * link. Flat (not extending [SubUser]) for the same reason [PaymentDetail]
+     * doesn't extend [PaymentRow].
+     */
+    @Serializable
+    data class SubUserCreated(
+        val id: String,
+        @SerialName("sub_merchant_id") val subMerchantId: String = "",
+        val username: String,
+        val role: String,
+        val status: String,
+        @SerialName("full_name") val fullName: String = "",
+        val email: String? = null,
+        val mobile: String? = null,
+        val phone: String? = null,
+        @SerialName("mfa_enabled") val mfaEnabled: Boolean = false,
+        @SerialName("last_login_at") val lastLoginAt: String? = null,
+        @SerialName("created_at") val createdAt: String = "",
+        @SerialName("invite_url") val inviteUrl: String,
+        @SerialName("invite_sent_to_channel") val inviteSentToChannel: String? = null,
+        @SerialName("invite_expires_at") val inviteExpiresAt: String = "",
+    ) {
+        fun toRow(): SubUser = SubUser(
+            id = id, subMerchantId = subMerchantId, username = username, role = role, status = status,
+            fullName = fullName, email = email, mobile = mobile, phone = phone, mfaEnabled = mfaEnabled,
+            lastLoginAt = lastLoginAt, createdAt = createdAt,
+        )
+    }
+
+    @Serializable
+    data class SubUserPatch(
+        @SerialName("full_name") val fullName: String? = null,
+        val email: String? = null,
+        val mobile: String? = null,
+        val phone: String? = null,
+        val role: String? = null,
+        val status: String? = null,
+    )
+
+    /** `POST .../users/{uid}/reissue-invite` response. */
+    @Serializable
+    data class ReissueInvite(
+        @SerialName("sent_to_channel") val sentToChannel: String? = null,
+        @SerialName("invite_url") val inviteUrl: String,
+        @SerialName("expires_at") val expiresAt: String = "",
     )
 
     private companion object {

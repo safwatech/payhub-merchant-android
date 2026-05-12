@@ -27,8 +27,11 @@
     <string name="action_open">Open</string>
     <string name="action_close">Close</string>
     <string name="action_done">Done</string>
+    <string name="action_2fa">Two-factor</string>
     <string name="loading">Loading…</string>
     <string name="common_copied">Copied</string>
+    <string name="common_copy">Copy</string>
+    <string name="common_save">Save</string>
     <string name="common_dash">—</string>
 
     <!-- Generic error surface for ErrorBox -->
@@ -44,6 +47,7 @@
     <string name="error_timeout">The request timed out. Please try again.</string>
     <string name="error_unexpected">Something went wrong. Please try again.</string>
     <string name="error_server_busy">PayHub is having trouble right now. Please try again shortly.</string>
+    <string name="error_mfa_required">Enter your authenticator code to confirm.</string>
 
     <!-- Brand -->
     <string name="brand_tagline">Operator console for your shop</string>
@@ -256,6 +260,123 @@
     <string name="more_reset_pw">Request password reset</string>
     <string name="more_reset_pw_hint">Sends reset instructions to your email and phone</string>
     <string name="more_version">PayHub Merchant %1$s\n%2$s</string>
+    <string name="more_security_section">Security</string>
+    <string name="more_business_section">Business</string>
+    <string name="more_change_pw">Change password</string>
+    <string name="more_change_pw_hint">Update your account password</string>
+    <string name="more_2fa">Two-factor authentication</string>
+    <string name="more_2fa_on_hint">On — tap to manage</string>
+    <string name="more_2fa_off_hint">Off — add an extra layer of security</string>
+    <string name="more_org_profile">Organisation profile</string>
+    <string name="more_org_profile_hint">Legal name, contact, address</string>
+    <string name="more_sub_merchants">Sub-merchants</string>
+    <string name="more_sub_merchants_hint">Manage your sub-shops and their users</string>
+
+    <!-- Change password -->
+    <string name="changepw_title">Change password</string>
+    <string name="changepw_current">Current password</string>
+    <string name="changepw_new">New password</string>
+    <string name="changepw_confirm">Confirm new password</string>
+    <string name="changepw_code">Authenticator code</string>
+    <string name="changepw_mismatch">Passwords don\'t match</string>
+    <string name="changepw_too_short">At least 12 characters</string>
+    <string name="changepw_success">Password changed</string>
+    <string name="changepw_submit">Change password</string>
+
+    <!-- Two-factor settings -->
+    <string name="mfa_title_settings">Two-factor authentication</string>
+    <string name="mfa_status_on">Two-factor is on</string>
+    <string name="mfa_status_off">Two-factor is off</string>
+    <string name="mfa_enable">Enable two-factor</string>
+    <string name="mfa_intro">Scan the QR code with an authenticator app (Google Authenticator, Authy, …), then enter the 6-digit code to confirm.</string>
+    <string name="mfa_secret_label">Setup key</string>
+    <string name="mfa_code">6-digit code</string>
+    <string name="mfa_confirm">Confirm</string>
+    <string name="mfa_enabled_toast">Two-factor enabled</string>
+    <string name="mfa_disable">Disable two-factor</string>
+    <string name="mfa_disable_password">Account password</string>
+    <string name="mfa_disabled_toast">Two-factor disabled</string>
+
+    <!-- Organisation profile -->
+    <string name="org_title">Organisation profile</string>
+    <string name="org_section_identity">Identity</string>
+    <string name="org_section_contact">Contact</string>
+    <string name="org_section_address">Address</string>
+    <string name="org_code">Code</string>
+    <string name="org_status">Status</string>
+    <string name="org_name">Display name</string>
+    <string name="org_type">Type</string>
+    <string name="org_type_person">Individual</string>
+    <string name="org_type_company">Company</string>
+    <string name="org_legal_name">Legal name</string>
+    <string name="org_tax_number">Tax number</string>
+    <string name="org_commercial_register_no">Commercial register no.</string>
+    <string name="org_billing_email">Billing email</string>
+    <string name="org_support_email">Support email</string>
+    <string name="org_phone">Phone</string>
+    <string name="org_website">Website</string>
+    <string name="org_address_line_1">Address line 1</string>
+    <string name="org_address_line_2">Address line 2</string>
+    <string name="org_city">City</string>
+    <string name="org_country">Country (2-letter code)</string>
+    <string name="org_logo_url">Logo URL</string>
+    <string name="org_read_only">You can view but not edit these — ask an owner to make changes.</string>
+    <string name="org_save">Save changes</string>
+    <string name="org_saved_toast">Saved</string>
+    <string name="org_err_https">Must start with https://</string>
+    <string name="org_err_country">Two uppercase letters, e.g. LY</string>
+    <string name="org_err_email">Enter a valid email</string>
+
+    <!-- Sub-merchants -->
+    <string name="subs_title">Sub-merchants</string>
+    <string name="subs_empty">No sub-merchants yet</string>
+    <string name="subs_add">Add sub-merchant</string>
+    <string name="subs_code">Code</string>
+    <string name="subs_code_prefix">Code prefix</string>
+    <string name="subs_name">Name</string>
+    <string name="subs_status_active">Active</string>
+    <string name="subs_payments_count">%1$d payments</string>
+    <string name="subs_created_toast">Sub-merchant created</string>
+    <string name="subs_code_hint">Lowercase letters, digits, - or _</string>
+    <string name="subs_prefix_hint">2–6 uppercase letters/digits</string>
+
+    <!-- Sub-merchant detail -->
+    <string name="sub_detail_title">Sub-merchant</string>
+    <string name="sub_detail_edit">Edit</string>
+    <string name="sub_detail_delete">Delete sub-merchant</string>
+    <string name="sub_detail_delete_confirm">This permanently removes the sub-merchant. This can\'t be undone.</string>
+    <string name="sub_detail_delete_blocked">Has %1$d payments — disable it instead</string>
+    <string name="sub_detail_users">Manage users</string>
+    <string name="sub_detail_updated_toast">Updated</string>
+    <string name="sub_detail_deleted_toast">Deleted</string>
+
+    <!-- Sub-users -->
+    <string name="subusers_title">Users</string>
+    <string name="subusers_empty">No users yet</string>
+    <string name="subusers_invite">Invite user</string>
+    <string name="subusers_username">Username</string>
+    <string name="subusers_full_name">Full name</string>
+    <string name="subusers_email">Email</string>
+    <string name="subusers_mobile">Mobile</string>
+    <string name="subusers_phone">Phone</string>
+    <string name="subusers_role">Role</string>
+    <string name="role_sub_owner">Shop owner</string>
+    <string name="role_sub_operator">Shop operator</string>
+    <string name="role_sub_viewer">Shop viewer</string>
+    <string name="subusers_invite_link_title">Invite link</string>
+    <string name="subusers_invite_sent">Sent to %1$s</string>
+    <string name="subusers_invite_not_sent">Couldn\'t send automatically — copy the link below</string>
+    <string name="subusers_invite_copy">Copy link</string>
+    <string name="subusers_edit">Edit</string>
+    <string name="subusers_disable">Disable</string>
+    <string name="subusers_reissue">Re-issue invite</string>
+    <string name="subusers_clear_mfa">Clear two-factor</string>
+    <string name="subusers_clear_mfa_code">Your authenticator code</string>
+    <string name="subusers_invited_toast">Invited</string>
+    <string name="subusers_updated_toast">Updated</string>
+    <string name="subusers_disabled_toast">Disabled</string>
+    <string name="subusers_reissued_toast">Invite re-issued</string>
+    <string name="subusers_mfa_cleared_toast">Two-factor cleared</string>
 
     <!-- Misc concatenations -->
     <string name="merchant_with_code">%1$s  ·  %2$s</string>

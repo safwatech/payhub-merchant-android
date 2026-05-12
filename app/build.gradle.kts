@@ -129,6 +129,9 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
 
+    // Client-side QR rendering for the in-app two-factor enrolment screen.
+    implementation(libs.zxing.core)
+
     // The PayHub bearer-token merchant client. See settings.gradle.kts for the
     // mavenLocal() note until 1.1.0 lands on Maven Central.
     implementation(libs.payhub.android)

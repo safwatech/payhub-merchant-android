@@ -52,6 +52,10 @@ fun HomeScreen(
     onOpenPayLink: (String) -> Unit,
     onOpenPayment: (String) -> Unit,
     onOpenSettlements: () -> Unit,
+    onOpenChangePassword: () -> Unit,
+    onOpenMfaSettings: () -> Unit,
+    onOpenOrgProfile: () -> Unit,
+    onOpenSubMerchants: () -> Unit,
 ) {
     var tab by rememberSaveable { mutableStateOf(HomeTab.Dashboard) }
 
@@ -90,6 +94,10 @@ fun HomeScreen(
             HomeTab.More -> MoreScreen(
                 modifier = content,
                 onOpenSettlements = onOpenSettlements,
+                onOpenChangePassword = onOpenChangePassword,
+                onOpenMfaSettings = onOpenMfaSettings,
+                onOpenOrgProfile = onOpenOrgProfile,
+                onOpenSubMerchants = onOpenSubMerchants,
             )
         }
     }

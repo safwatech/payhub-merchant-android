@@ -80,3 +80,15 @@ fun isWriteRole(effectiveRole: String): Boolean = when (effectiveRole.lowercase(
     "owner", "developer", "sub_owner", "sub_operator" -> true
     else -> false
 }
+
+/**
+ * Friendly label for a sub-merchant role wire code. The "shop" framing matches
+ * the portal's vocabulary (`sub_owner` → "Shop owner"). Unknown codes fall back
+ * to [humanizeRole].
+ */
+fun humanizeSubRole(role: String): String = when (role.lowercase(Locale.ROOT)) {
+    "sub_owner" -> "Shop owner"
+    "sub_operator" -> "Shop operator"
+    "sub_viewer" -> "Shop viewer"
+    else -> humanizeRole(role)
+}

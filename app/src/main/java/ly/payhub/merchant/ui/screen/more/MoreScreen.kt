@@ -18,10 +18,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.Business
 import androidx.compose.material.icons.rounded.FactCheck
 import androidx.compose.material.icons.rounded.LockReset
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Password
+import androidx.compose.material.icons.rounded.Security
+import androidx.compose.material.icons.rounded.Storefront
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -60,11 +64,16 @@ import ly.payhub.merchant.ui.components.BrandHeader
 import ly.payhub.merchant.ui.components.MetaBadge
 import ly.payhub.merchant.ui.screen.auth.ForgotPasswordDialog
 import ly.payhub.merchant.util.humanizeRole
+import ly.payhub.merchant.util.isParentOwner
 
 @Composable
 fun MoreScreen(
     modifier: Modifier = Modifier,
     onOpenSettlements: () -> Unit = {},
+    onOpenChangePassword: () -> Unit = {},
+    onOpenMfaSettings: () -> Unit = {},
+    onOpenOrgProfile: () -> Unit = {},
+    onOpenSubMerchants: () -> Unit = {},
     viewModel: MoreViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -207,13 +216,53 @@ fun MoreScreen(
                 },
             )
 
-            // Reset password.
+            // ---- Security ----
+            SectionHeader(stringResource(R.string.more_security_section))
+            ListItem(
+                modifier = Modifier.clickableRow(onClick = onOpenChangePassword),
+                headlineContent = { Text(stringResource(R.string.more_change_pw)) },
+                supportingContent = { Text(stringResource(R.string.more_change_pw_hint)) },
+                leadingContent = { Icon(Icons.Rounded.Password, contentDescription = null) },
+                trailingContent = { ChevronEnd() },
+            )
+            ListItem(
+                modifier = Modifier.clickableRow(onClick = onOpenMfaSettings),
+                headlineContent = { Text(stringResource(R.string.more_2fa)) },
+                supportingContent = {
+                    Text(stringResource(if (me?.mfaEnabled == true) R.string.more_2fa_on_hint else R.string.more_2fa_off_hint))
+                },
+                leadingContent = { Icon(Icons.Rounded.Security, contentDescription = null) },
+                trailingContent = { ChevronEnd() },
+            )
+            // "Reset password" (the forgot-password mini-flow) — for when you've forgotten it.
             ListItem(
                 modifier = Modifier.clickableRow { showForgot = true },
                 headlineContent = { Text(stringResource(R.string.more_reset_pw)) },
                 supportingContent = { Text(stringResource(R.string.more_reset_pw_hint)) },
                 leadingContent = { Icon(Icons.Rounded.LockReset, contentDescription = null) },
             )
+
+            // ---- Business (parent users only) ----
+            if (me != null && me.subMerchant == null) {
+                SectionHeader(stringResource(R.string.more_business_section))
+                ListItem(
+                    modifier = Modifier.clickableRow(onClick = onOpenOrgProfile),
+                    headlineContent = { Text(stringResource(R.string.more_org_profile)) },
+                    supportingContent = { Text(stringResource(R.string.more_org_profile_hint)) },
+                    leadingContent = { Icon(Icons.Rounded.Business, contentDescription = null) },
+                    trailingContent = { ChevronEnd() },
+                )
+                if (me.isParentOwner() && me.entitlements.aggregator) {
+                    ListItem(
+                        modifier = Modifier.clickableRow(onClick = onOpenSubMerchants),
+                        headlineContent = { Text(stringResource(R.string.more_sub_merchants)) },
+                        supportingContent = { Text(stringResource(R.string.more_sub_merchants_hint)) },
+                        leadingContent = { Icon(Icons.Rounded.Storefront, contentDescription = null) },
+                        trailingContent = { ChevronEnd() },
+                    )
+                }
+                // TODO(payhub): SUB_OWNER cashier self-management screen
+            }
 
             HorizontalDivider(Modifier.padding(horizontal = 16.dp))
 
@@ -262,6 +311,25 @@ private fun ProfileRow(label: String, value: String) {
         Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(value, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 16.dp))
     }
+}
+
+@Composable
+private fun SectionHeader(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(start = 16.dp, top = 8.dp),
+    )
+}
+
+@Composable
+private fun ChevronEnd() {
+    Icon(
+        Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }
 
 private fun Modifier.clickableRow(enabled: Boolean = true, onClick: () -> Unit): Modifier =

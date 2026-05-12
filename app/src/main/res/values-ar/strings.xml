@@ -35,8 +35,11 @@
     <string name="action_open">فتح</string>
     <string name="action_close">إغلاق</string>
     <string name="action_done">تم</string>
+    <string name="action_2fa">المصادقة الثنائية</string>
     <string name="loading">جارٍ التحميل…</string>
     <string name="common_copied">تم النسخ</string>
+    <string name="common_copy">نسخ</string>
+    <string name="common_save">حفظ</string>
     <string name="common_dash">—</string>
 
     <!-- صناديق الحالة -->
@@ -52,6 +55,7 @@
     <string name="error_timeout">انتهت مهلة الطلب. حاول مرة أخرى.</string>
     <string name="error_unexpected">حدث خطأ ما. حاول مرة أخرى.</string>
     <string name="error_server_busy">PayHub تواجه مشكلة الآن. حاول بعد قليل.</string>
+    <string name="error_mfa_required">أدخل رمز المصادقة لتأكيد العملية.</string>
 
     <!-- العلامة -->
     <string name="brand_tagline">واجهة المُشغّل لمتجرك</string>
@@ -264,6 +268,123 @@
     <string name="more_reset_pw">طلب إعادة تعيين كلمة المرور</string>
     <string name="more_reset_pw_hint">يرسل تعليمات الإعادة عبر البريد والهاتف</string>
     <string name="more_version">PayHub Merchant %1$s\n%2$s</string>
+    <string name="more_security_section">الأمان</string>
+    <string name="more_business_section">الأعمال</string>
+    <string name="more_change_pw">تغيير كلمة المرور</string>
+    <string name="more_change_pw_hint">تحديث كلمة مرور حسابك</string>
+    <string name="more_2fa">المصادقة الثنائية</string>
+    <string name="more_2fa_on_hint">مُفعَّلة — اضغط للإدارة</string>
+    <string name="more_2fa_off_hint">مُعطَّلة — أضِف طبقة حماية إضافية</string>
+    <string name="more_org_profile">ملف المؤسسة</string>
+    <string name="more_org_profile_hint">الاسم القانوني والتواصل والعنوان</string>
+    <string name="more_sub_merchants">التجار الفرعيون</string>
+    <string name="more_sub_merchants_hint">إدارة متاجرك الفرعية ومستخدميها</string>
+
+    <!-- تغيير كلمة المرور -->
+    <string name="changepw_title">تغيير كلمة المرور</string>
+    <string name="changepw_current">كلمة المرور الحالية</string>
+    <string name="changepw_new">كلمة المرور الجديدة</string>
+    <string name="changepw_confirm">تأكيد كلمة المرور الجديدة</string>
+    <string name="changepw_code">رمز المصادقة</string>
+    <string name="changepw_mismatch">كلمتا المرور غير متطابقتين</string>
+    <string name="changepw_too_short">12 حرفاً على الأقل</string>
+    <string name="changepw_success">تم تغيير كلمة المرور</string>
+    <string name="changepw_submit">تغيير كلمة المرور</string>
+
+    <!-- إعدادات المصادقة الثنائية -->
+    <string name="mfa_title_settings">المصادقة الثنائية</string>
+    <string name="mfa_status_on">المصادقة الثنائية مُفعَّلة</string>
+    <string name="mfa_status_off">المصادقة الثنائية مُعطَّلة</string>
+    <string name="mfa_enable">تفعيل المصادقة الثنائية</string>
+    <string name="mfa_intro">امسح رمز QR بتطبيق مصادقة (Google Authenticator أو Authy…)، ثم أدخل الرمز المكوّن من 6 أرقام للتأكيد.</string>
+    <string name="mfa_secret_label">مفتاح الإعداد</string>
+    <string name="mfa_code">رمز من 6 أرقام</string>
+    <string name="mfa_confirm">تأكيد</string>
+    <string name="mfa_enabled_toast">تم تفعيل المصادقة الثنائية</string>
+    <string name="mfa_disable">تعطيل المصادقة الثنائية</string>
+    <string name="mfa_disable_password">كلمة مرور الحساب</string>
+    <string name="mfa_disabled_toast">تم تعطيل المصادقة الثنائية</string>
+
+    <!-- ملف المؤسسة -->
+    <string name="org_title">ملف المؤسسة</string>
+    <string name="org_section_identity">الهوية</string>
+    <string name="org_section_contact">التواصل</string>
+    <string name="org_section_address">العنوان</string>
+    <string name="org_code">الرمز</string>
+    <string name="org_status">الحالة</string>
+    <string name="org_name">الاسم المعروض</string>
+    <string name="org_type">النوع</string>
+    <string name="org_type_person">فرد</string>
+    <string name="org_type_company">شركة</string>
+    <string name="org_legal_name">الاسم القانوني</string>
+    <string name="org_tax_number">الرقم الضريبي</string>
+    <string name="org_commercial_register_no">رقم السجل التجاري</string>
+    <string name="org_billing_email">بريد الفوترة</string>
+    <string name="org_support_email">بريد الدعم</string>
+    <string name="org_phone">الهاتف</string>
+    <string name="org_website">الموقع الإلكتروني</string>
+    <string name="org_address_line_1">العنوان — السطر 1</string>
+    <string name="org_address_line_2">العنوان — السطر 2</string>
+    <string name="org_city">المدينة</string>
+    <string name="org_country">الدولة (رمز من حرفين)</string>
+    <string name="org_logo_url">رابط الشعار</string>
+    <string name="org_read_only">يمكنك العرض دون التعديل — اطلب من المالك إجراء التغييرات.</string>
+    <string name="org_save">حفظ التغييرات</string>
+    <string name="org_saved_toast">تم الحفظ</string>
+    <string name="org_err_https">يجب أن يبدأ بـ https://</string>
+    <string name="org_err_country">حرفان كبيران، مثل LY</string>
+    <string name="org_err_email">أدخل بريداً صحيحاً</string>
+
+    <!-- التجار الفرعيون -->
+    <string name="subs_title">التجار الفرعيون</string>
+    <string name="subs_empty">لا يوجد تجار فرعيون بعد</string>
+    <string name="subs_add">إضافة تاجر فرعي</string>
+    <string name="subs_code">الرمز</string>
+    <string name="subs_code_prefix">بادئة الرمز</string>
+    <string name="subs_name">الاسم</string>
+    <string name="subs_status_active">نشط</string>
+    <string name="subs_payments_count">%1$d دفعة</string>
+    <string name="subs_created_toast">تم إنشاء التاجر الفرعي</string>
+    <string name="subs_code_hint">أحرف صغيرة وأرقام و- أو _</string>
+    <string name="subs_prefix_hint">2–6 أحرف/أرقام كبيرة</string>
+
+    <!-- تفاصيل التاجر الفرعي -->
+    <string name="sub_detail_title">التاجر الفرعي</string>
+    <string name="sub_detail_edit">تعديل</string>
+    <string name="sub_detail_delete">حذف التاجر الفرعي</string>
+    <string name="sub_detail_delete_confirm">سيؤدي هذا إلى حذف التاجر الفرعي نهائياً. لا يمكن التراجع.</string>
+    <string name="sub_detail_delete_blocked">به %1$d دفعة — عطّله بدلاً من ذلك</string>
+    <string name="sub_detail_users">إدارة المستخدمين</string>
+    <string name="sub_detail_updated_toast">تم التحديث</string>
+    <string name="sub_detail_deleted_toast">تم الحذف</string>
+
+    <!-- مستخدمو التاجر الفرعي -->
+    <string name="subusers_title">المستخدمون</string>
+    <string name="subusers_empty">لا يوجد مستخدمون بعد</string>
+    <string name="subusers_invite">دعوة مستخدم</string>
+    <string name="subusers_username">اسم المستخدم</string>
+    <string name="subusers_full_name">الاسم الكامل</string>
+    <string name="subusers_email">البريد الإلكتروني</string>
+    <string name="subusers_mobile">الهاتف المحمول</string>
+    <string name="subusers_phone">الهاتف</string>
+    <string name="subusers_role">الدور</string>
+    <string name="role_sub_owner">مالك المتجر</string>
+    <string name="role_sub_operator">مشغّل المتجر</string>
+    <string name="role_sub_viewer">عارض المتجر</string>
+    <string name="subusers_invite_link_title">رابط الدعوة</string>
+    <string name="subusers_invite_sent">أُرسل إلى %1$s</string>
+    <string name="subusers_invite_not_sent">تعذّر الإرسال تلقائياً — انسخ الرابط أدناه</string>
+    <string name="subusers_invite_copy">نسخ الرابط</string>
+    <string name="subusers_edit">تعديل</string>
+    <string name="subusers_disable">تعطيل</string>
+    <string name="subusers_reissue">إعادة إصدار الدعوة</string>
+    <string name="subusers_clear_mfa">مسح المصادقة الثنائية</string>
+    <string name="subusers_clear_mfa_code">رمز المصادقة الخاص بك</string>
+    <string name="subusers_invited_toast">تمت الدعوة</string>
+    <string name="subusers_updated_toast">تم التحديث</string>
+    <string name="subusers_disabled_toast">تم التعطيل</string>
+    <string name="subusers_reissued_toast">تمت إعادة إصدار الدعوة</string>
+    <string name="subusers_mfa_cleared_toast">تم مسح المصادقة الثنائية</string>
 
     <!-- تركيبات نصّية -->
     <string name="merchant_with_code">%1$s  ·  %2$s</string>

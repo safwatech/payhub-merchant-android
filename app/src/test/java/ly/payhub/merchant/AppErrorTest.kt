@@ -42,9 +42,20 @@ class AppErrorTest {
             AppError.Forbidden(),
             AppError.NotFound(),
             AppError.Invalid("bad amount"),
+            AppError.MfaRequired(),
             AppError.RateLimited(),
             AppError.Network(),
             AppError.Unexpected(),
         ).forEach { assertTrue(it.message.isNotBlank()) }
+    }
+
+    @Test
+    fun mfa_required_round_trips_through_app_error_exception() {
+        val original = AppError.MfaRequired("need a code")
+        val mapped = AppError.from(AppErrorException(original))
+        assertTrue(mapped is AppError.MfaRequired)
+        assertEquals("need a code", mapped.message)
+        // It must NOT be conflated with an auth-loss state.
+        assertTrue(mapped !is AppError.Unauthorized)
     }
 }

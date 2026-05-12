@@ -235,6 +235,69 @@ class MerchantRepository(
         rawApi.listSettlementRows(tokenStore.baseUrl, token, fileId, statusFilter = statusFilter, limit = limit, offset = offset)
     }
 
+    // ---- account / org / sub-merchants (raw — SDK 1.2) ----
+
+    suspend fun changePassword(oldPassword: String, newPassword: String, code: String?): Result<Unit> =
+        withAccess { token -> rawApi.changePassword(tokenStore.baseUrl, token, oldPassword, newPassword, code) }
+
+    suspend fun mfaEnrol(): Result<RawMerchantApi.MfaEnrol> =
+        withAccess { token -> rawApi.mfaEnrol(tokenStore.baseUrl, token) }
+
+    suspend fun mfaConfirm(code: String): Result<Unit> {
+        val r = withAccess { token -> rawApi.mfaConfirm(tokenStore.baseUrl, token, code) }
+        if (r.isSuccess) refreshMe()
+        return r
+    }
+
+    suspend fun mfaDisable(password: String): Result<Unit> {
+        val r = withAccess { token -> rawApi.mfaDisable(tokenStore.baseUrl, token, password) }
+        if (r.isSuccess) refreshMe()
+        return r
+    }
+
+    suspend fun getOrg(): Result<RawMerchantApi.OrgInfo> =
+        withAccess { token -> rawApi.getOrg(tokenStore.baseUrl, token) }
+
+    suspend fun updateOrg(patch: RawMerchantApi.OrgPatch): Result<RawMerchantApi.OrgInfo> =
+        withAccess { token -> rawApi.updateOrg(tokenStore.baseUrl, token, patch) }
+
+    suspend fun listSubMerchants(): Result<List<RawMerchantApi.SubMerchant>> =
+        withAccess { token -> rawApi.listSubMerchants(tokenStore.baseUrl, token) }
+
+    suspend fun getSubMerchant(id: String): Result<RawMerchantApi.SubMerchant> =
+        withAccess { token -> rawApi.getSubMerchant(tokenStore.baseUrl, token, id) }
+
+    suspend fun createSubMerchant(body: RawMerchantApi.SubMerchantCreate): Result<RawMerchantApi.SubMerchant> =
+        withAccess { token -> rawApi.createSubMerchant(tokenStore.baseUrl, token, body) }
+
+    suspend fun updateSubMerchant(id: String, body: RawMerchantApi.SubMerchantPatch): Result<RawMerchantApi.SubMerchant> =
+        withAccess { token -> rawApi.updateSubMerchant(tokenStore.baseUrl, token, id, body) }
+
+    suspend fun deleteSubMerchant(id: String): Result<Unit> =
+        withAccess { token -> rawApi.deleteSubMerchant(tokenStore.baseUrl, token, id) }
+
+    suspend fun listSubUsers(subId: String): Result<List<RawMerchantApi.SubUser>> =
+        withAccess { token -> rawApi.listSubUsers(tokenStore.baseUrl, token, subId) }
+
+    suspend fun createSubUser(subId: String, body: RawMerchantApi.SubUserCreate): Result<RawMerchantApi.SubUserCreated> =
+        withAccess { token -> rawApi.createSubUser(tokenStore.baseUrl, token, subId, body) }
+
+    suspend fun updateSubUser(
+        subId: String,
+        uid: String,
+        body: RawMerchantApi.SubUserPatch,
+    ): Result<RawMerchantApi.SubUser> =
+        withAccess { token -> rawApi.updateSubUser(tokenStore.baseUrl, token, subId, uid, body) }
+
+    suspend fun disableSubUser(subId: String, uid: String): Result<Unit> =
+        withAccess { token -> rawApi.disableSubUser(tokenStore.baseUrl, token, subId, uid) }
+
+    suspend fun reissueSubUserInvite(subId: String, uid: String): Result<RawMerchantApi.ReissueInvite> =
+        withAccess { token -> rawApi.reissueSubUserInvite(tokenStore.baseUrl, token, subId, uid) }
+
+    suspend fun clearSubUserMfa(subId: String, uid: String, code: String): Result<Unit> =
+        withAccess { token -> rawApi.clearSubUserMfa(tokenStore.baseUrl, token, subId, uid, code) }
+
     // ------------------------------------------------------------------ devices (push)
 
     suspend fun registerDevice(fcmToken: String): Result<Unit> =

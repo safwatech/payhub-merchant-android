@@ -32,6 +32,13 @@ sealed class AppError(open val message: String, open val cause: Throwable? = nul
     /** 422 / 400 — bad input; [message] carries the server's explanation. */
     data class Invalid(override val message: String) : AppError(message)
 
+    /**
+     * 401 `hub.merchant.mfa_required` — the action needs the caller's TOTP code,
+     * which wasn't supplied. **Not** an auth-loss state: callers must keep the
+     * session and re-prompt for the code rather than route back to login.
+     */
+    data class MfaRequired(override val message: String = "Enter your authenticator code to confirm.") : AppError(message)
+
     /** 429. */
     data class RateLimited(override val message: String = "Too many requests — please slow down and try again.") : AppError(message)
 
@@ -86,6 +93,7 @@ fun AppError.localizedMessage(): String = when (this) {
     is AppError.NotFound -> stringResource(ly.payhub.merchant.R.string.error_not_found)
     is AppError.RateLimited -> stringResource(ly.payhub.merchant.R.string.error_rate_limited)
     is AppError.Network -> stringResource(ly.payhub.merchant.R.string.error_network)
+    is AppError.MfaRequired -> stringResource(ly.payhub.merchant.R.string.error_mfa_required)
     is AppError.Invalid -> message
     is AppError.Unexpected -> stringResource(ly.payhub.merchant.R.string.error_unexpected)
 }

@@ -4,6 +4,9 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import ly.payhub.PayhubClient
 import ly.payhub.TokenPair
 
@@ -75,11 +78,34 @@ class TokenStore(context: Context) {
         get() = prefs.getBoolean(KEY_APP_LOCK, false)
         set(value) { prefs.edit().putBoolean(KEY_APP_LOCK, value).apply() }
 
+    // ---- crash-reporting opt-in ----
+
+    /**
+     * Whether the user has opted in to anonymous crash reporting. Off by
+     * default; cleared on sign-out so a re-login starts fresh. Exposed as a
+     * [StateFlow] so [PayhubMerchantApp]'s collector can flip Sentry on/off
+     * the moment the user toggles it in Diagnostics.
+     */
+    var crashReportingEnabled: Boolean
+        get() = prefs.getBoolean(KEY_CRASH_REPORTING, false)
+        set(value) {
+            prefs.edit().putBoolean(KEY_CRASH_REPORTING, value).apply()
+            _crashReportingFlow.value = value
+        }
+
+    private val _crashReportingFlow = MutableStateFlow(crashReportingEnabled)
+    val crashReportingFlow: StateFlow<Boolean> = _crashReportingFlow.asStateFlow()
+
     fun clearSession() {
         // Wipe credentials but keep the base URL — a re-login on the same install
         // shouldn't have to re-type the server.
         clearTokens()
-        prefs.edit().remove(KEY_PUSH_ENABLED).remove(KEY_APP_LOCK).apply()
+        prefs.edit()
+            .remove(KEY_PUSH_ENABLED)
+            .remove(KEY_APP_LOCK)
+            .remove(KEY_CRASH_REPORTING)
+            .apply()
+        _crashReportingFlow.value = false
     }
 
     private companion object {
@@ -89,5 +115,6 @@ class TokenStore(context: Context) {
         const val KEY_BASE_URL = "base_url"
         const val KEY_PUSH_ENABLED = "push_enabled"
         const val KEY_APP_LOCK = "app_lock_enabled"
+        const val KEY_CRASH_REPORTING = "crash_reporting_enabled"
     }
 }

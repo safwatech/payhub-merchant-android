@@ -5,10 +5,20 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import dagger.hilt.android.HiltAndroidApp
-import io.sentry.android.core.SentryAndroid
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import ly.payhub.merchant.data.TokenStore
+import ly.payhub.merchant.di.AppCoroutineScope
+import ly.payhub.merchant.ui.util.CrashReportingController
+import javax.inject.Inject
 
 @HiltAndroidApp
 class PayhubMerchantApp : Application() {
+
+    @Inject lateinit var tokenStore: TokenStore
+
+    @Inject @AppCoroutineScope lateinit var appScope: CoroutineScope
+
     override fun onCreate() {
         super.onCreate()
         initCrashReporting()
@@ -16,22 +26,19 @@ class PayhubMerchantApp : Application() {
     }
 
     /**
-     * Crash / error reporting → GlitchTip (Sentry protocol). The DSN is a build-time
-     * constant ([BuildConfig.SENTRY_DSN]); empty by default ⇒ we skip init entirely
-     * (no SDK, no network) — the vendor sets `-Ppayhub.sentryDsn=…` or PAYHUB_SENTRY_DSN
-     * to enable it. No PII: no user identity, no HTTP-breadcrumb interceptor wired,
-     * crashes/errors only (no performance tracing).
+     * Crash / error reporting → GlitchTip (Sentry protocol). **Off by
+     * default**; we only init when both gates are open — a non-blank
+     * [BuildConfig.SENTRY_DSN] **and** the user's opt-in toggle in
+     * Diagnostics. [CrashReportingController.apply] is idempotent, so the
+     * collector below also flips Sentry on/off the moment the toggle
+     * changes without an app restart. No PII; release-tagged
+     * `payhub-merchant-android@<versionName>`.
      */
     private fun initCrashReporting() {
-        val dsn = BuildConfig.SENTRY_DSN
-        if (dsn.isBlank()) return
-        SentryAndroid.init(this) { options ->
-            options.dsn = dsn
-            options.release = "payhub-merchant-android@${BuildConfig.VERSION_NAME}"
-            options.environment = if (BuildConfig.DEBUG) "debug" else "release"
-            options.tracesSampleRate = 0.0
-            options.isEnableAutoSessionTracking = true
-            options.isSendDefaultPii = false
+        val controller = CrashReportingController(this, BuildConfig.SENTRY_DSN)
+        controller.apply(tokenStore.crashReportingEnabled)
+        appScope.launch {
+            tokenStore.crashReportingFlow.collect { controller.apply(it) }
         }
     }
 

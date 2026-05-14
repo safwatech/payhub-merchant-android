@@ -23,6 +23,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.Business
 import androidx.compose.material.icons.rounded.FactCheck
 import androidx.compose.material.icons.rounded.Fingerprint
@@ -81,6 +82,7 @@ fun MoreScreen(
     onOpenMfaSettings: () -> Unit = {},
     onOpenOrgProfile: () -> Unit = {},
     onOpenSubMerchants: () -> Unit = {},
+    onOpenDiagnostics: () -> Unit = {},
     viewModel: MoreViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -287,6 +289,17 @@ fun MoreScreen(
                 supportingContent = { Text(stringResource(R.string.more_reset_pw_hint)) },
                 leadingContent = { Icon(Icons.Rounded.LockReset, contentDescription = null) },
             )
+            // Diagnostics — opt-in to anonymous crash reports. Hidden when the
+            // build doesn't carry a DSN (vendor-managed).
+            if (BuildConfig.SENTRY_DSN.isNotBlank()) {
+                ListItem(
+                    modifier = Modifier.clickableRow(onClick = onOpenDiagnostics),
+                    headlineContent = { Text(stringResource(R.string.diagnostics_title)) },
+                    supportingContent = { Text(stringResource(R.string.diagnostics_toggle)) },
+                    leadingContent = { Icon(Icons.Rounded.BugReport, contentDescription = null) },
+                    trailingContent = { ChevronEnd() },
+                )
+            }
 
             // ---- Business (parent users only) ----
             if (me != null && me.subMerchant == null) {

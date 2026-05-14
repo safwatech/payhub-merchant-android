@@ -17,6 +17,7 @@ import ly.payhub.merchant.data.MerchantRepository.AuthState
 import ly.payhub.merchant.ui.screen.HomeScreen
 import ly.payhub.merchant.ui.screen.SplashScreen
 import ly.payhub.merchant.ui.screen.account.ChangePasswordScreen
+import ly.payhub.merchant.ui.screen.account.DiagnosticsScreen
 import ly.payhub.merchant.ui.screen.account.MfaSettingsScreen
 import ly.payhub.merchant.ui.screen.auth.AcceptInviteScreen
 import ly.payhub.merchant.ui.screen.auth.LoginScreen
@@ -64,6 +65,7 @@ object Routes {
     const val SETTLEMENT_DETAIL = "settlements/{id}"
     const val CHANGE_PASSWORD = "account/change-password"
     const val MFA_SETTINGS = "account/mfa"
+    const val DIAGNOSTICS = "account/diagnostics"
     const val ORG_PROFILE = "org"
     const val SUB_MERCHANTS = "sub-merchants"
     const val SUB_MERCHANT_DETAIL = "sub-merchants/{id}"
@@ -237,6 +239,7 @@ fun AppNavHost(
                 onOpenMfaSettings = { navController.navigate(Routes.MFA_SETTINGS) },
                 onOpenOrgProfile = { navController.navigate(Routes.ORG_PROFILE) },
                 onOpenSubMerchants = { navController.navigate(Routes.SUB_MERCHANTS) },
+                onOpenDiagnostics = { navController.navigate(Routes.DIAGNOSTICS) },
             )
         }
 
@@ -304,6 +307,10 @@ fun AppNavHost(
 
         composable(Routes.MFA_SETTINGS) {
             MfaSettingsScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.DIAGNOSTICS) {
+            DiagnosticsScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Routes.ORG_PROFILE) {

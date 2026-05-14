@@ -56,6 +56,7 @@ fun HomeScreen(
     onOpenMfaSettings: () -> Unit,
     onOpenOrgProfile: () -> Unit,
     onOpenSubMerchants: () -> Unit,
+    onOpenDiagnostics: () -> Unit,
 ) {
     var tab by rememberSaveable { mutableStateOf(HomeTab.Dashboard) }
 
@@ -98,6 +99,7 @@ fun HomeScreen(
                 onOpenMfaSettings = onOpenMfaSettings,
                 onOpenOrgProfile = onOpenOrgProfile,
                 onOpenSubMerchants = onOpenSubMerchants,
+                onOpenDiagnostics = onOpenDiagnostics,
             )
         }
     }

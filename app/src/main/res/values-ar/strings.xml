@@ -398,6 +398,12 @@
     <string name="subusers_reissued_toast">تمت إعادة إصدار الدعوة</string>
     <string name="subusers_mfa_cleared_toast">تم مسح المصادقة الثنائية</string>
 
+    <!-- التشخيصات (تفعيل اختياري لتقارير الأعطال) -->
+    <string name="diagnostics_title">التشخيصات</string>
+    <string name="diagnostics_toggle">إرسال تقارير الأعطال مجهولة الهوية</string>
+    <string name="diagnostics_blurb">يساعدنا على معالجة الأعطال أسرع. لا تُرسَل بيانات شخصية. يمكنك إيقاف الميزة في أي وقت.</string>
+    <string name="diagnostics_unavailable">تقارير الأعطال غير متاحة في هذا الإصدار.</string>
+
     <!-- تركيبات نصّية -->
     <string name="merchant_with_code">%1$s  ·  %2$s</string>
     <string name="shop_subtitle_suffix">  · متجر %1$s</string>

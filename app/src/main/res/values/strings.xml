@@ -390,6 +390,12 @@
     <string name="subusers_reissued_toast">Invite re-issued</string>
     <string name="subusers_mfa_cleared_toast">Two-factor cleared</string>
 
+    <!-- Diagnostics (crash-reporting opt-in; gated on a build-time DSN) -->
+    <string name="diagnostics_title">Diagnostics</string>
+    <string name="diagnostics_toggle">Send anonymous crash reports</string>
+    <string name="diagnostics_blurb">Helps us catch bugs faster. No personal data is sent. You can turn this off any time.</string>
+    <string name="diagnostics_unavailable">Crash reporting is not available in this build.</string>
+
     <!-- Misc concatenations -->
     <string name="merchant_with_code">%1$s  ·  %2$s</string>
     <string name="shop_subtitle_suffix">  · shop %1$s</string>

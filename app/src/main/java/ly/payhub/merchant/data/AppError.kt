@@ -5,6 +5,8 @@ import androidx.compose.ui.res.stringResource
 import ly.payhub.AuthenticationException
 import ly.payhub.ConnectionException
 import ly.payhub.DecodeException
+import ly.payhub.MerchantValidationError
+import ly.payhub.MfaRequiredError
 import ly.payhub.NotFoundException
 import ly.payhub.PayhubApiException
 import ly.payhub.PayhubException
@@ -33,6 +35,18 @@ sealed class AppError(open val message: String, open val cause: Throwable? = nul
     data class Invalid(override val message: String) : AppError(message)
 
     /**
+     * Server returned a stable error envelope `{code, params, message}` from the
+     * merchant API. The UI looks [code] up in `ErrorCatalog` for a localised
+     * rendering, falling back to [message] when the code isn't catalogued.
+     * `params` slots into the localised template (e.g. `"Try again in {0}"`).
+     */
+    data class Validation(
+        val code: String,
+        val params: List<String>,
+        override val message: String,
+    ) : AppError(message)
+
+    /**
      * 401 `hub.merchant.mfa_required` — the action needs the caller's TOTP code,
      * which wasn't supplied. **Not** an auth-loss state: callers must keep the
      * session and re-prompt for the code rather than route back to login.
@@ -51,6 +65,8 @@ sealed class AppError(open val message: String, open val cause: Throwable? = nul
     companion object {
         fun from(t: Throwable): AppError = when (t) {
             is AppErrorException -> t.error
+            is MfaRequiredError -> MfaRequired()
+            is MerchantValidationError -> Validation(t.code, t.params, friendly(t))
             is AuthenticationException -> Unauthorized()
             is PermissionException -> Forbidden(friendly(t))
             is NotFoundException -> NotFound(friendly(t))
@@ -95,6 +111,7 @@ fun AppError.localizedMessage(): String = when (this) {
     is AppError.Network -> stringResource(ly.payhub.merchant.R.string.error_network)
     is AppError.MfaRequired -> stringResource(ly.payhub.merchant.R.string.error_mfa_required)
     is AppError.Invalid -> message
+    is AppError.Validation -> ErrorCatalog.localize(this, androidx.compose.ui.platform.LocalContext.current)
     is AppError.Unexpected -> stringResource(ly.payhub.merchant.R.string.error_unexpected)
 }
 

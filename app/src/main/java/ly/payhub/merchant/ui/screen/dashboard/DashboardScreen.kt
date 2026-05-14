@@ -181,8 +181,6 @@ private fun DashboardBody(state: DashboardUiState) {
                 }
                 else -> item {
                     Text(
-                        // TODO(payhub): SDK 1.1.0's MerchantDashboard has no sub_breakdown;
-                        // this falls back to a raw GET — if even that fails, just say so.
                         stringResource(R.string.dash_breakdown_unavailable),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -201,14 +199,18 @@ private fun SubBreakdownCard(row: SubBreakdownRow, currency: String) {
     ) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(row.name ?: row.code ?: stringResource(R.string.status_shop), style = MaterialTheme.typography.titleSmall)
-                if (!row.code.isNullOrBlank()) MetaBadge(row.code!!)
+                Text(
+                    row.name.takeIf { it.isNotBlank() } ?: row.code.takeIf { it.isNotBlank() } ?: stringResource(R.string.status_shop),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                if (row.code.isNotBlank()) MetaBadge(row.code)
             }
+            // SDK 1.2's `SubBreakdownRow` carries paid_count + paid_volume_minor;
+            // inflight / active-links / needs-follow-up live on the parent
+            // `MerchantDashboard` total, not the per-sub row.
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Stat(stringResource(R.string.dash_stat_paid), "${row.paidCount}")
                 Stat(stringResource(R.string.dash_stat_volume), Money.format(row.paidVolumeMinor, currency))
-                Stat(stringResource(R.string.dash_stat_inflight), "${row.inflight}")
-                Stat(stringResource(R.string.dash_stat_followup), "${row.needsFollowup}")
             }
         }
     }

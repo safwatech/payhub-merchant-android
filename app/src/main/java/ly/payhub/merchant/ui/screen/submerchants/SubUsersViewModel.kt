@@ -200,3 +200,23 @@ class SubUsersViewModel @Inject constructor(
         const val MSG_MFA_CLEARED = "Two-factor cleared"
     }
 }
+
+/**
+ * Project the wider `SubUserCreated` envelope (a [SubUser] + freshly minted
+ * invite link) down to a list-row [SubUser]. The invite-URL fields are kept
+ * separately on the UI state (`InviteResult`), not on the list rows.
+ */
+private fun SubUserCreated.asSubUser(): SubUser = SubUser(
+    id = id,
+    subMerchantId = subMerchantId,
+    username = username,
+    role = role,
+    status = status,
+    fullName = fullName,
+    email = email,
+    mobile = mobile,
+    phone = phone,
+    mfaEnabled = mfaEnabled,
+    lastLoginAt = lastLoginAt,
+    createdAt = createdAt,
+)

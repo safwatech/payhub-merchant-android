@@ -318,12 +318,12 @@ class MerchantRepository(
     // ------------------------------------------------------------------ devices (push)
 
     suspend fun registerDevice(fcmToken: String): Result<Unit> =
-        withAccess { token -> rawApi.registerDevice(tokenStore.baseUrl, token, fcmToken) }
+        guarded { client().devices.registerAndroid(fcmToken); Unit }
 
     /** Best-effort: signed-out callers get a silent success — we have nothing to unregister with. */
     suspend fun unregisterDevice(fcmToken: String): Result<Unit> {
-        val token = client().currentTokens()?.accessToken ?: return Result.success(Unit)
-        return rawApi.unregisterDevice(tokenStore.baseUrl, token, fcmToken).also { propagateAuthLoss(it) }
+        if (client().currentTokens()?.accessToken == null) return Result.success(Unit)
+        return guarded { client().devices.unregister(fcmToken) }
     }
 
     var pushEnabled: Boolean

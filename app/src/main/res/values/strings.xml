@@ -393,4 +393,39 @@
     <!-- Misc concatenations -->
     <string name="merchant_with_code">%1$s  ·  %2$s</string>
     <string name="shop_subtitle_suffix">  · shop %1$s</string>
+
+    <!-- ErrorCatalog (server error-envelope codes → localised strings).
+         Keep this block in sync with res/values-ar/strings.xml and with
+         data/ErrorCatalog.kt's MAP. See spec §8 for the full list. -->
+    <string name="err_generic">Something went wrong.</string>
+    <string name="err_merchant_invalid_credentials">Incorrect username or password.</string>
+    <string name="err_merchant_locked_out">Account locked. Try again in %1$s.</string>
+    <string name="err_merchant_last_owner">You must keep at least one owner.</string>
+    <string name="err_merchant_disabled">This account is disabled.</string>
+    <string name="err_mfa_required_envelope">Enter your two-factor code to continue.</string>
+    <string name="err_mfa_invalid_code">That two-factor code is invalid.</string>
+    <string name="err_mfa_already_enabled">Two-factor is already enabled.</string>
+    <string name="err_password_too_weak">Password is too weak.</string>
+    <string name="err_password_reuse">You can\'t reuse a recent password.</string>
+    <string name="err_password_current_wrong">Your current password is incorrect.</string>
+    <string name="err_auth_session_expired">Your session expired. Sign in again.</string>
+    <string name="err_auth_bearer_expired">Refreshing session…</string>
+    <string name="err_pay_link_quota_exceeded">You\'ve hit your active pay-link limit.</string>
+    <string name="err_pay_link_expired">This pay-link has expired.</string>
+    <string name="err_pay_link_cancelled">This pay-link was cancelled.</string>
+    <string name="err_pay_link_already_paid">This pay-link is already paid.</string>
+    <string name="err_pay_link_max_retries">This pay-link has reached its retry limit.</string>
+    <string name="err_sub_merchant_code_taken">That shop code is already in use.</string>
+    <string name="err_sub_merchant_has_payments">Can\'t delete — payments reference this shop.</string>
+    <string name="err_sub_merchant_disabled">This shop is disabled.</string>
+    <string name="err_sub_merchant_aggregator_required">Multi-shop requires the Pro tier.</string>
+    <string name="err_sub_user_last_owner">You must keep at least one shop owner.</string>
+    <string name="err_sub_user_username_taken">That username is already taken.</string>
+    <string name="err_device_platform_keys_missing">Push setup is incomplete on this device.</string>
+    <string name="err_device_token_too_long">Push token is too long.</string>
+    <string name="err_api_key_label_taken">That key label is already used.</string>
+    <string name="err_api_key_revoked">That API key has been revoked.</string>
+    <string name="err_invite_expired">This invitation has expired.</string>
+    <string name="err_invite_consumed">This invitation was already used.</string>
+    <string name="err_rate_limited">Too many attempts. Try again in %1$s.</string>
 </resources>

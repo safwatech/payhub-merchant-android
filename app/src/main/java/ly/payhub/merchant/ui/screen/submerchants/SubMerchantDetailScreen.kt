@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Group
+import androidx.compose.material.icons.rounded.VpnKey
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -62,6 +63,7 @@ fun SubMerchantDetailScreen(
     onBack: () -> Unit,
     onDeleted: () -> Unit,
     onOpenUsers: (String) -> Unit,
+    onOpenApiKeys: (String) -> Unit,
     viewModel: SubMerchantDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -135,7 +137,7 @@ fun SubMerchantDetailScreen(
 
                     HorizontalDivider()
 
-                    // Manage users
+                    // Manage users (Cashiers).
                     ListItem(
                         modifier = Modifier.fillMaxWidth().clickable { onOpenUsers(sm.id) },
                         leadingContent = { Icon(Icons.Rounded.Group, contentDescription = null) },
@@ -145,7 +147,17 @@ fun SubMerchantDetailScreen(
                         },
                     )
 
-                    // TODO(payhub): sub-merchant API keys
+                    // Sub-merchant API keys — sub-scoped only (parent keys stay
+                    // web-portal-only, see CLAUDE.md / native-apps note).
+                    ListItem(
+                        modifier = Modifier.fillMaxWidth().clickable { onOpenApiKeys(sm.id) },
+                        leadingContent = { Icon(Icons.Rounded.VpnKey, contentDescription = null) },
+                        headlineContent = { Text(stringResource(R.string.sub_detail_api_keys)) },
+                        supportingContent = { Text(stringResource(R.string.sub_detail_api_keys_hint)) },
+                        trailingContent = {
+                            Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        },
+                    )
 
                     HorizontalDivider()
 

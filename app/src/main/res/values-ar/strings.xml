@@ -398,6 +398,24 @@
     <string name="subusers_reissued_toast">تمت إعادة إصدار الدعوة</string>
     <string name="subusers_mfa_cleared_toast">تم مسح المصادقة الثنائية</string>
 
+    <!-- إدخال مفاتيح API للفرع -->
+    <string name="sub_detail_api_keys">مفاتيح API</string>
+    <string name="sub_detail_api_keys_hint">وصول برمجي لهذا الفرع من نظامك الخلفي</string>
+    <string name="api_keys_title">مفاتيح API</string>
+    <string name="api_keys_empty">لا توجد مفاتيح API لهذا الفرع بعد</string>
+    <string name="api_keys_generate">إنشاء مفتاح API</string>
+    <string name="api_keys_revoke">إبطال</string>
+    <string name="api_keys_created_fmt">أُنشئ %1$s</string>
+    <string name="api_keys_new_dialog_title">مفتاح API جديد</string>
+    <string name="api_keys_new_blurb">سيستخدم النظام الخلفي لهذا الفرع هذا المفتاح للاتصال بـ PayHub. ستظهر القيمة الكاملة مرة واحدة فقط في الشاشة التالية — انسخها قبل الإغلاق.</string>
+    <string name="api_keys_scopes">الصلاحيات</string>
+    <string name="api_keys_scopes_hint">مفصولة بمسافة، مثال: payments:write pay-links:read</string>
+    <string name="api_keys_secret_title">احفظ هذا المفتاح الآن</string>
+    <string name="api_keys_secret_blurb">هذه هي المرة الوحيدة التي يُعرض فيها المفتاح كاملاً. انسخه في مكان آمن — لن يُعرض مرة أخرى.</string>
+    <string name="api_keys_copy_secret">نسخ المفتاح</string>
+    <string name="api_keys_saved_it">لقد حفظته</string>
+    <string name="api_keys_clipboard_label">مفتاح PayHub API</string>
+
     <!-- التشخيصات (تفعيل اختياري لتقارير الأعطال) -->
     <string name="diagnostics_title">التشخيصات</string>
     <string name="diagnostics_toggle">إرسال تقارير الأعطال مجهولة الهوية</string>

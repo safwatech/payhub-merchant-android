@@ -28,6 +28,7 @@ import ly.payhub.merchant.ui.screen.paylinks.CreatePayLinkScreen
 import ly.payhub.merchant.ui.screen.paylinks.PayLinkDetailScreen
 import ly.payhub.merchant.ui.screen.settlements.SettlementDetailScreen
 import ly.payhub.merchant.ui.screen.settlements.SettlementsScreen
+import ly.payhub.merchant.ui.screen.submerchants.SubMerchantApiKeysScreen
 import ly.payhub.merchant.ui.screen.submerchants.SubMerchantDetailScreen
 import ly.payhub.merchant.ui.screen.submerchants.SubMerchantsScreen
 import ly.payhub.merchant.ui.screen.submerchants.SubUsersScreen
@@ -70,6 +71,7 @@ object Routes {
     const val SUB_MERCHANTS = "sub-merchants"
     const val SUB_MERCHANT_DETAIL = "sub-merchants/{id}"
     const val SUB_USERS = "sub-merchants/{id}/users"
+    const val SUB_API_KEYS = "sub-merchants/{id}/api-keys"
 
     fun mfa(challengeToken: String) = "mfa/${Uri.encode(challengeToken)}"
     fun payLinkDetail(id: String) = "pay-links/${Uri.encode(id)}"
@@ -77,6 +79,7 @@ object Routes {
     fun settlementDetail(id: String) = "settlements/${Uri.encode(id)}"
     fun subMerchantDetail(id: String) = "sub-merchants/${Uri.encode(id)}"
     fun subUsers(id: String) = "sub-merchants/${Uri.encode(id)}/users"
+    fun subApiKeys(id: String) = "sub-merchants/${Uri.encode(id)}/api-keys"
     fun acceptInvite(token: String, m: String?, u: String?, s: String?): String {
         val q = buildList {
             add("token=${Uri.encode(token)}")
@@ -333,6 +336,7 @@ fun AppNavHost(
                 onBack = { navController.popBackStack() },
                 onDeleted = { navController.popBackStack() },
                 onOpenUsers = { id -> navController.navigate(Routes.subUsers(id)) },
+                onOpenApiKeys = { id -> navController.navigate(Routes.subApiKeys(id)) },
             )
         }
 
@@ -341,6 +345,16 @@ fun AppNavHost(
             arguments = listOf(navArgument("id") { type = NavType.StringType }),
         ) { backStack ->
             SubUsersScreen(
+                subId = backStack.arguments?.getString("id").orEmpty(),
+                onBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(
+            Routes.SUB_API_KEYS,
+            arguments = listOf(navArgument("id") { type = NavType.StringType }),
+        ) { backStack ->
+            SubMerchantApiKeysScreen(
                 subId = backStack.arguments?.getString("id").orEmpty(),
                 onBack = { navController.popBackStack() },
             )

@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import ly.payhub.CreatePayLinkRequest
 import ly.payhub.LoginResult
+import ly.payhub.MerchantApiKey
+import ly.payhub.MerchantApiKeyWithSecret
 import ly.payhub.MerchantDashboard
 import ly.payhub.MerchantMe
 import ly.payhub.MfaEnrol
@@ -314,6 +316,29 @@ class MerchantRepository(
 
     suspend fun clearSubUserMfa(subId: String, uid: String, code: String): Result<Unit> =
         guarded { client().subMerchants.users.clearMfa(subId, uid, code) }
+
+    // ---- sub-merchant API keys (sub-scoped only — parent keys are web-portal-only) ----
+
+    suspend fun listSubMerchantApiKeys(subId: String): Result<List<MerchantApiKey>> =
+        guarded { client().subMerchants.apiKeys.list(subId) }
+
+    /**
+     * Mint a new key. The returned [MerchantApiKeyWithSecret.secret] is the
+     * plaintext secret — server stores only an argon2 hash, so the caller
+     * MUST surface it to the operator immediately (the screen does this in a
+     * copy-or-lose-it modal) and discard it once the modal closes.
+     */
+    suspend fun createSubMerchantApiKey(
+        subId: String,
+        scopes: List<String>,
+        allowedIps: List<String> = emptyList(),
+        rateLimitTier: String = "standard",
+    ): Result<MerchantApiKeyWithSecret> = guarded {
+        client().subMerchants.apiKeys.create(subId, scopes, allowedIps, rateLimitTier)
+    }
+
+    suspend fun revokeSubMerchantApiKey(subId: String, keyId: String): Result<MerchantApiKey> =
+        guarded { client().subMerchants.apiKeys.revoke(subId, keyId) }
 
     // ------------------------------------------------------------------ devices (push)
 

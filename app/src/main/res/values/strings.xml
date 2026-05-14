@@ -359,8 +359,26 @@
     <string name="sub_detail_delete_confirm">This permanently removes the sub-merchant. This can\'t be undone.</string>
     <string name="sub_detail_delete_blocked">Has %1$d payments — disable it instead</string>
     <string name="sub_detail_users">Manage users</string>
+    <string name="sub_detail_api_keys">API keys</string>
+    <string name="sub_detail_api_keys_hint">Programmatic access for this shop\'s backend</string>
     <string name="sub_detail_updated_toast">Updated</string>
     <string name="sub_detail_deleted_toast">Deleted</string>
+
+    <!-- Sub-merchant API keys -->
+    <string name="api_keys_title">API keys</string>
+    <string name="api_keys_empty">No API keys for this shop yet</string>
+    <string name="api_keys_generate">Generate API key</string>
+    <string name="api_keys_revoke">Revoke</string>
+    <string name="api_keys_created_fmt">Created %1$s</string>
+    <string name="api_keys_new_dialog_title">New API key</string>
+    <string name="api_keys_new_blurb">A backend on this shop will use this key to call PayHub. The plaintext value is shown once on the next screen — copy it before you dismiss.</string>
+    <string name="api_keys_scopes">Scopes</string>
+    <string name="api_keys_scopes_hint">Space-separated, e.g. payments:write pay-links:read</string>
+    <string name="api_keys_secret_title">Save this key now</string>
+    <string name="api_keys_secret_blurb">This is the only time the full secret is shown. Copy it somewhere safe — you won\'t see it again.</string>
+    <string name="api_keys_copy_secret">Copy key</string>
+    <string name="api_keys_saved_it">I\'ve saved it</string>
+    <string name="api_keys_clipboard_label">PayHub API key</string>
 
     <!-- Sub-users -->
     <string name="subusers_title">Users</string>

@@ -55,7 +55,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import ly.payhub.merchant.R
-import ly.payhub.merchant.data.RawMerchantApi
+import ly.payhub.*
 import ly.payhub.merchant.ui.components.ErrorBox
 import ly.payhub.merchant.ui.components.LoadingBox
 import ly.payhub.merchant.ui.components.MetaBadge
@@ -132,7 +132,7 @@ fun PaymentDetailScreen(
 
 @Composable
 private fun DetailBody(
-    payment: RawMerchantApi.PaymentDetail,
+    payment: PaymentDetail,
     onCopy: (label: String, text: String) -> Unit,
     onOpenPayLink: (String) -> Unit,
 ) {
@@ -247,7 +247,7 @@ private fun DetailBody(
 }
 
 @Composable
-private fun EventRow(event: RawMerchantApi.PaymentEvent, isLast: Boolean) {
+private fun EventRow(event: PaymentEvent, isLast: Boolean) {
     val dotColor = when (event.source.lowercase()) {
         "psp" -> StatusColors.Pending
         "admin" -> StatusColors.Negative

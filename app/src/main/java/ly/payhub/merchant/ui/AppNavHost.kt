@@ -87,14 +87,28 @@ object Routes {
 }
 
 /** Parsed deep-link the launcher received. */
-private sealed interface DeepLink {
+internal sealed interface DeepLink {
     data class Invite(val token: String, val m: String?, val u: String?, val s: String?) : DeepLink
     data class PayLink(val id: String) : DeepLink
 }
 
-private fun parseDeepLink(uri: String?): DeepLink? {
+internal fun parseDeepLink(uri: String?): DeepLink? {
     if (uri == null) return null
     val parsed = runCatching { Uri.parse(uri) }.getOrNull() ?: return null
+    // App Link form: https://app.payhub.ly/m/accept-invite?token=…&m=…&u=…&s=…
+    val isInviteHttps = parsed.scheme == "https" &&
+        parsed.host == "app.payhub.ly" &&
+        (parsed.path?.startsWith("/m/accept-invite") == true)
+    if (isInviteHttps) {
+        val token = parsed.getQueryParameter("token")?.takeIf { it.isNotBlank() } ?: return null
+        return DeepLink.Invite(
+            token = token,
+            m = parsed.getQueryParameter("m"),
+            u = parsed.getQueryParameter("u"),
+            s = parsed.getQueryParameter("s"),
+        )
+    }
+    // Custom-scheme forms — the legacy invite URL plus the push-notification pay-link.
     if (parsed.scheme != "payhub") return null
     return when (parsed.host) {
         "accept-invite" -> {

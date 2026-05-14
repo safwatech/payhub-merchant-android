@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ly.payhub.merchant.data.AppError
 import ly.payhub.merchant.data.MerchantRepository
-import ly.payhub.merchant.data.RawMerchantApi
+import ly.payhub.*
 import ly.payhub.merchant.data.appError
 import javax.inject.Inject
 
@@ -19,7 +19,7 @@ data class SettlementsUiState(
     val refreshing: Boolean = false,
     val loadingMore: Boolean = false,
     val error: AppError? = null,
-    val items: List<RawMerchantApi.SettlementFile> = emptyList(),
+    val items: List<SettlementFile> = emptyList(),
     val hasMore: Boolean = false,
 )
 

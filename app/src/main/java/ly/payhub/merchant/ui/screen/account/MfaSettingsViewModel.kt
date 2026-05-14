@@ -10,14 +10,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ly.payhub.merchant.data.AppError
 import ly.payhub.merchant.data.MerchantRepository
-import ly.payhub.merchant.data.RawMerchantApi
+import ly.payhub.*
 import ly.payhub.merchant.data.asAppError
 import javax.inject.Inject
 
 data class MfaSettingsUiState(
     val mfaEnabled: Boolean = false,
     /** Non-null once `enrol` has run and before `confirm` lands — carries the secret + otpauth URI. */
-    val enrol: RawMerchantApi.MfaEnrol? = null,
+    val enrol: MfaEnrol? = null,
     val code: String = "",
     val disablePassword: String = "",
     val busy: Boolean = false,

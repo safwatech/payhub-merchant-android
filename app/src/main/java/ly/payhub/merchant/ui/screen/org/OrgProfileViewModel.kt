@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ly.payhub.merchant.data.AppError
 import ly.payhub.merchant.data.MerchantRepository
-import ly.payhub.merchant.data.RawMerchantApi
+import ly.payhub.*
 import ly.payhub.merchant.data.appError
 import ly.payhub.merchant.util.isParentOwner
 import javax.inject.Inject
@@ -37,7 +37,7 @@ data class OrgProfileUiState(
     val loading: Boolean = true,
     val saving: Boolean = false,
     val error: AppError? = null,
-    val org: RawMerchantApi.OrgInfo? = null,
+    val org: OrgInfo? = null,
     val edit: OrgEdit = OrgEdit(),
     val canEdit: Boolean = false,
     val message: String? = null,
@@ -90,7 +90,7 @@ class OrgProfileViewModel @Inject constructor(
     }
 
     /** Build a patch from only the dirty fields. An emptied field whose original was non-null → `""` (server clears it). */
-    private fun buildPatch(org: RawMerchantApi.OrgInfo, e: OrgEdit): RawMerchantApi.OrgPatch? {
+    private fun buildPatch(org: OrgInfo, e: OrgEdit): OrgPatch? {
         fun diff(current: String?, edited: String): String? {
             val orig = current.orEmpty()
             if (edited == orig) return null
@@ -115,7 +115,7 @@ class OrgProfileViewModel @Inject constructor(
             phone, website, addressLine1, addressLine2, city, country, logoUrl,
         ).any { it != null }
         if (!anyDirty) return null
-        return RawMerchantApi.OrgPatch(
+        return OrgPatch(
             name = name, type = type, legalName = legalName, taxNumber = taxNumber,
             commercialRegisterNo = commercialRegisterNo, billingEmail = billingEmail, supportEmail = supportEmail,
             phone = phone, website = website, addressLine1 = addressLine1, addressLine2 = addressLine2,
@@ -123,7 +123,7 @@ class OrgProfileViewModel @Inject constructor(
         )
     }
 
-    private fun RawMerchantApi.OrgInfo.toEdit() = OrgEdit(
+    private fun OrgInfo.toEdit() = OrgEdit(
         name = name, type = type, legalName = legalName.orEmpty(), taxNumber = taxNumber.orEmpty(),
         commercialRegisterNo = commercialRegisterNo.orEmpty(), billingEmail = billingEmail.orEmpty(),
         supportEmail = supportEmail.orEmpty(), phone = phone.orEmpty(), website = website.orEmpty(),

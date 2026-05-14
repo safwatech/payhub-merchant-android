@@ -12,7 +12,7 @@ import ly.payhub.MerchantDashboard
 import ly.payhub.MerchantMe
 import ly.payhub.merchant.data.AppError
 import ly.payhub.merchant.data.MerchantRepository
-import ly.payhub.merchant.data.RawMerchantApi
+import ly.payhub.*
 import ly.payhub.merchant.data.appError
 import javax.inject.Inject
 
@@ -35,7 +35,7 @@ data class DashboardUiState(
     val me: MerchantMe? = null,
     val data: MerchantDashboard? = null,
     /** Per-shop breakdown (parent users only) — raw HTTP; null if unavailable. */
-    val subBreakdown: List<RawMerchantApi.SubBreakdownRow>? = null,
+    val subBreakdown: List<SubBreakdownRow>? = null,
     val subBreakdownUnavailable: Boolean = false,
 ) {
     val paidCount: Int get() = data?.paymentsByStatus?.firstOrNull { it.status.equals("succeeded", true) }?.count ?: 0

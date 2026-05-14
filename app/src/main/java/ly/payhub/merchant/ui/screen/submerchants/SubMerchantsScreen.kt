@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ly.payhub.merchant.R
-import ly.payhub.merchant.data.RawMerchantApi
+import ly.payhub.*
 import ly.payhub.merchant.ui.components.EmptyBox
 import ly.payhub.merchant.ui.components.ErrorBox
 import ly.payhub.merchant.ui.components.LoadingBox
@@ -123,7 +123,7 @@ fun SubMerchantsScreen(
 }
 
 @Composable
-private fun SubMerchantRow(sm: RawMerchantApi.SubMerchant, onClick: () -> Unit) {
+private fun SubMerchantRow(sm: SubMerchant, onClick: () -> Unit) {
     ListItem(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),

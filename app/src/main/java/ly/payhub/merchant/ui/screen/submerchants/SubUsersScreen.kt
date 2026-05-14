@@ -51,7 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ly.payhub.merchant.R
-import ly.payhub.merchant.data.RawMerchantApi
+import ly.payhub.*
 import ly.payhub.merchant.ui.components.EmptyBox
 import ly.payhub.merchant.ui.components.ErrorBox
 import ly.payhub.merchant.ui.components.LoadingBox
@@ -78,8 +78,8 @@ fun SubUsersScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showInvite by remember { mutableStateOf(false) }
-    var editTarget by remember { mutableStateOf<RawMerchantApi.SubUser?>(null) }
-    var mfaTarget by remember { mutableStateOf<RawMerchantApi.SubUser?>(null) }
+    var editTarget by remember { mutableStateOf<SubUser?>(null) }
+    var mfaTarget by remember { mutableStateOf<SubUser?>(null) }
 
     LaunchedEffect(subId) { viewModel.start(subId) }
     LaunchedEffect(state.message) {
@@ -167,7 +167,7 @@ fun SubUsersScreen(
 
 @Composable
 private fun SubUserRow(
-    user: RawMerchantApi.SubUser,
+    user: SubUser,
     onEdit: () -> Unit,
     onDisable: () -> Unit,
     onReissue: () -> Unit,
@@ -266,7 +266,7 @@ private fun InviteUserDialog(
 
 @Composable
 private fun EditUserDialog(
-    user: RawMerchantApi.SubUser,
+    user: SubUser,
     busy: Boolean,
     onDismiss: () -> Unit,
     onSubmit: (role: String?, status: String?) -> Unit,

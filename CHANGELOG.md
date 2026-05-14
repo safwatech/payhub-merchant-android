@@ -3,6 +3,71 @@
 All notable changes to the native Android merchant app. Versioning is
 independent of the PayHub server and SDK.
 
+## [0.4.0] — 2026-05-14
+
+The 1.2.0 SDK uplift — every `/merchant/*` endpoint now rides the SDK — plus
+four feature follow-ups that round out the on-device parent-OWNER toolkit.
+
+### Added
+- **App Links for the invite URL.** `https://app.payhub.ly/m/accept-invite?…`
+  now opens the app directly on devices where it's installed (verified via
+  `<intent-filter android:autoVerify="true">` against the server-side
+  `/.well-known/assetlinks.json`). The legacy `payhub://accept-invite` intent
+  filter is kept through this release for in-flight emails — slated for
+  removal in 0.5.0.
+- **Account → Diagnostics** screen with a *Send anonymous crash reports*
+  toggle (default **off**). Sentry / GlitchTip init is now runtime-gated on
+  both a baked-in DSN **and** the toggle; turning the toggle off `Sentry.close`s
+  the SDK so subsequent crashes are not captured. The Diagnostics row is
+  hidden in builds without a DSN.
+- **Sub-merchant detail → Cashiers tab** (invite / disable / clear-MFA) and
+  **API keys tab** (generate / revoke). Plaintext API-key secrets are
+  surfaced **once** at create time in a copy-or-it-is-gone modal — the server
+  stores only an argon2 hash.
+- **Localised server-error envelope.** The new `ErrorCatalog` resolves ~30
+  high-traffic codes (`merchant.last_owner`, `pay_link.quota_exceeded`,
+  `sub_merchant.code_taken`, `mfa.invalid_code`, …) to translated strings in
+  `values{,-ar}/strings.xml`. Unknown codes fall back to the server's
+  English message.
+
+### Changed
+- **Upgrades to `ly.payhub:payhub-android` 1.2.0.** The in-app
+  `RawMerchantApi` and `BearerRetry` shims are deleted — every endpoint now
+  goes through the SDK, including `payments` / `settlements` / `devices` /
+  `account` / `mfa` / `org` / `subMerchants` (incl. nested `users` and
+  `apiKeys`) and `reports.dashboard(groupBySub = true)`. SDK-level
+  transparent 401 → refresh → retry covers what `BearerRetry` used to do.
+- **Refresh-token-at-rest** is now AES/GCM-encrypted with an
+  AndroidKeyStore key bound to biometric / device-credential auth — but
+  **only when the app-lock toggle is on**. Toggling app lock on triggers a
+  one-shot rewrap; toggling off transparently unwraps. The 30-second
+  user-auth validity window lets the unlock prompt grant the SDK's first
+  refresh without re-prompting; a stale window forces the next refresh to
+  re-prompt. A `KeyPermanentlyInvalidatedException` (biometric enrolment
+  changed) ⇒ session loss.
+- `AppError` gains a `Validation(code, params, message)` case — server
+  validation envelopes now reach the UI with their stable code, ready for
+  catalogue lookup.
+
+### Security
+- Refresh tokens at rest are no longer in plain EncryptedSharedPreferences
+  when app lock is on; an OS-enforced biometric gate is now required to
+  unwrap them.
+
+### Tests
+- `ErrorCatalogTest` — catalogue hits resolve, unknowns fall back, param
+  interpolation works.
+- `RefreshTokenVaultTest` — round-trip on/off, rewrap migration,
+  `KeyPermanentlyInvalidatedException` fallthrough (Robolectric Keystore).
+- `CrashReportingControllerTest` — Sentry init / close on the toggle's
+  edges, DSN-missing short-circuit.
+
+### Known limitations
+- Still not compiled in the authoring environment — relies on Android
+  Studio / CI.
+- Webhook / PSP-gateway / parent-merchant API-key management remains
+  web-portal-only.
+
 ## [0.3.0] — 2026-05-12
 
 The rest of the merchant surface a shopkeeper or parent owner needs from a phone

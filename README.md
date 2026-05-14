@@ -24,9 +24,11 @@ SDK (the bearer-token `PayhubMerchantClient`).
 
 ## Status
 
-`0.1.0` — initial scaffold (the "D6" slice of the mobile-uplift plan). Every
-screen in the planned scope is present and wired; a few are intentionally thin.
-See `CHANGELOG.md`.
+`0.4.0` — see `CHANGELOG.md`. Every screen is on the **1.2.0** SDK
+(`ly.payhub:payhub-android:1.2.0`); the previous `RawMerchantApi` /
+`BearerRetry` shims are gone — `auth`, `pay-links`, `payments`, `settlements`,
+`devices`, `account`, `mfa`, `org`, `subMerchants` (incl. nested `users` /
+`apiKeys`), and `reports.dashboard(groupBySub = true)` all live in the SDK.
 
 **It has not been compiled in the environment it was authored in** (no JDK /
 Android SDK there) — it relies on Android Studio / the standalone repo's CI to
@@ -34,22 +36,13 @@ build. The Gradle wrapper JAR is **not** committed (it can't be without running
 `gradle wrapper`); run `gradle wrapper` once, or just open the project in
 Android Studio, which generates it.
 
-## What it covers (and doesn't)
+## What it covers
 
-The 1.1.0 SDK exposes **auth**, **pay-links**, and **`reports.dashboard`** — so
-those screens are real. Things the SDK doesn't have yet (merchant-payments list,
-change-password, MFA management, settlements, sub-merchant management,
-`/merchant/devices`) are either omitted or, where it's clean, done as a small
-**raw authenticated HTTP call** inside `data/RawMerchantApi.kt`:
-
-- `POST /merchant/devices` / `DELETE /merchant/devices` (token in the JSON
-  body, not a query string) — FCM push registration.
-- `GET /merchant/dashboard?group_by=sub&window_hours=…` — the per-shop
-  breakdown for parent merchants (the SDK's `MerchantDashboard` model has no
-  `sub_breakdown` field).
-
-All such spots are marked `// TODO(payhub): needs SDK 1.2 …`. When 1.2 ships,
-fold these into the SDK and delete `RawMerchantApi`.
+The 1.2.0 SDK covers every `/merchant/*` endpoint this app needs, so the
+repository is a thin pass-through to `client.<namespace>.<method>(…)`.
+Webhook / PSP-gateway / parent-merchant API-key management are deliberately
+left to the web portal; in-app API-key management is **scoped to a
+sub-merchant** (Sub-merchant detail → API keys).
 
 ## Architecture
 
@@ -74,7 +67,7 @@ fold these into the SDK and delete `RawMerchantApi`.
 
 ## Running it (Android Studio)
 
-1. **The SDK.** Until `ly.payhub:payhub-android:1.1.0` is on Maven Central via
+1. **The SDK.** Until `ly.payhub:payhub-android:1.2.0` is on Maven Central via
    the `safwatech/payhub-android` mirror, build it locally so `mavenLocal()`
    (already in `settings.gradle.kts`) can resolve it:
 
@@ -82,7 +75,7 @@ fold these into the SDK and delete `RawMerchantApi`.
    # from the monorepo root:
    (cd sdks/android && ./gradlew publishToMavenLocal)
    # or, from a standalone checkout of this app, clone the SDK at its tag:
-   git clone --depth 1 -b v1.1.0 https://github.com/safwatech/payhub-android
+   git clone --depth 1 -b v1.2.0 https://github.com/safwatech/payhub-android
    (cd payhub-android && ./gradlew publishToMavenLocal)
    ```
 
@@ -131,7 +124,12 @@ testers. The `release` job in `.github/workflows/ci.yml` is wired (currently
 
 ## Deep links
 
-- `payhub://accept-invite?token=…&m=<merchant>&u=<username>&s=<shop>` — opens
-  the accept-invitation screen (matches the link the portal emails).
-- `payhub://pay-link/<id>` — emitted by push notifications; `AppNavHost` can be
-  extended to route it straight to a pay-link detail screen.
+- `https://app.payhub.ly/m/accept-invite?token=…&m=<merchant>&u=<username>&s=<shop>`
+  — an **App Link** (verified via `/.well-known/assetlinks.json`). Opens the
+  accept-invitation screen on devices where the app is installed; falls back to
+  the SPA otherwise. The legacy `payhub://accept-invite?…` custom-scheme
+  intent filter is retained through 0.4.0 for in-flight emails; slated for
+  removal in 0.5.0.
+- `payhub://pay-link/<id>` — emitted by push notifications; `AppNavHost`
+  routes it to the pay-link detail screen (or parks it through the auth flow
+  if the user is signed out).

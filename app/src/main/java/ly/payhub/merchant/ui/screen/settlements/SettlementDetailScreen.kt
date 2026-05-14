@@ -51,7 +51,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import ly.payhub.merchant.R
-import ly.payhub.merchant.data.RawMerchantApi
+import ly.payhub.*
 import ly.payhub.merchant.ui.components.ErrorBox
 import ly.payhub.merchant.ui.components.LoadingBox
 import ly.payhub.merchant.ui.components.MetaBadge
@@ -152,7 +152,7 @@ fun SettlementDetailScreen(
 }
 
 @Composable
-private fun HeaderCard(file: RawMerchantApi.SettlementFile?) {
+private fun HeaderCard(file: SettlementFile?) {
     if (file == null) return
     Card(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -229,7 +229,7 @@ private fun FilterRow(current: SettlementRowFilter, onPick: (SettlementRowFilter
 
 @Composable
 private fun SettlementRowItem(
-    row: RawMerchantApi.SettlementRow,
+    row: SettlementRow,
     onOpenPayment: (String) -> Unit,
 ) {
     val payClickable = row.paymentId != null

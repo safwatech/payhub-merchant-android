@@ -9,9 +9,25 @@ import ly.payhub.CreatePayLinkRequest
 import ly.payhub.LoginResult
 import ly.payhub.MerchantDashboard
 import ly.payhub.MerchantMe
+import ly.payhub.MfaEnrol
+import ly.payhub.OrgInfo
+import ly.payhub.OrgPatch
 import ly.payhub.PayLink
 import ly.payhub.PayLinkList
+import ly.payhub.PaymentDetail
+import ly.payhub.PaymentRow
 import ly.payhub.PayhubMerchantClient
+import ly.payhub.ReissueInvite
+import ly.payhub.SettlementFile
+import ly.payhub.SettlementRow
+import ly.payhub.SubBreakdownResponse
+import ly.payhub.SubMerchant
+import ly.payhub.SubMerchantCreate
+import ly.payhub.SubMerchantPatch
+import ly.payhub.SubUser
+import ly.payhub.SubUserCreate
+import ly.payhub.SubUserCreated
+import ly.payhub.SubUserPatch
 import okhttp3.OkHttpClient
 import java.util.concurrent.atomic.AtomicReference
 
@@ -27,15 +43,12 @@ import java.util.concurrent.atomic.AtomicReference
  *  - publishes [authState] so the nav host can route between the auth flow and
  *    the home shell reactively.
  *
- * For the `/merchant/*` endpoints not in SDK 1.1.0 (payments, settlements,
- * devices, the per-shop dashboard breakdown, change-password / MFA / org /
- * sub-merchant management) it delegates to [RawMerchantApi], wrapped in
- * [BearerRetry] so those calls get the same transparent 401 → refresh → retry
- * the SDK does for the endpoints it covers.
+ * All endpoints (payments, settlements, devices, dashboards, account /
+ * org / sub-merchant management) ride the SDK 1.2 namespaces; the SDK's
+ * transport coalesces 401 → refresh → retry on its own.
  */
 class MerchantRepository(
     private val tokenStore: TokenStore,
-    private val rawApi: RawMerchantApi,
     private val sharedHttpClient: OkHttpClient,
     /** Process-lifetime scope (Hilt-provided) for fire-and-forget work like the launch bootstrap. */
     private val appScope: CoroutineScope,
@@ -51,20 +64,6 @@ class MerchantRepository(
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
     private val clientRef = AtomicReference(buildClient())
-
-    /**
-     * Gives the raw-shim calls the SDK's transparent "401 → refresh → retry once"
-     * behaviour. `tokenRefresh` rotates the refresh token and persists the new pair
-     * through the client's `onTokensRefreshed` (→ [TokenStore]), so no rebuild needed.
-     */
-    private val bearerRetry = BearerRetry(
-        currentAccessToken = { client().currentTokens()?.accessToken },
-        refresh = {
-            client().currentTokens()?.refreshToken
-                ?.let { rt -> runCatching { client().auth.tokenRefresh(rt) }.getOrNull()?.accessToken }
-        },
-        onAuthLoss = ::handleAuthLoss,
-    )
 
     val baseUrl: String get() = tokenStore.baseUrl
 
@@ -208,39 +207,40 @@ class MerchantRepository(
 
     suspend fun dashboard(windowHours: Int): Result<MerchantDashboard> = guarded { client().reports.dashboard(windowHours = windowHours) }
 
-    /** Per-shop breakdown for a parent merchant. Raw HTTP — see [RawMerchantApi]. */
-    suspend fun dashboardBySub(windowHours: Int): Result<RawMerchantApi.SubBreakdownResponse> =
-        withAccess { token -> rawApi.dashboardBySub(tokenStore.baseUrl, token, windowHours) }
+    /** Per-shop breakdown for a parent merchant. */
+    suspend fun dashboardBySub(windowHours: Int): Result<SubBreakdownResponse> =
+        guarded { client().reports.dashboardBySub(windowHours) }
 
-    // ------------------------------------------------------------------ payments (raw — SDK 1.2)
+    // ------------------------------------------------------------------ payments (SDK 1.2)
 
     /** Paginated payments list. Server caps `limit` at 200. */
     suspend fun listPayments(
         psp: String? = null,
         status: String? = null,
+        subMerchantId: String? = null,
         limit: Int = 50,
         offset: Int = 0,
-    ): Result<List<RawMerchantApi.PaymentRow>> = withAccess { token ->
-        rawApi.listPayments(tokenStore.baseUrl, token, psp = psp, status = status, limit = limit, offset = offset)
+    ): Result<List<PaymentRow>> = guarded {
+        client().payments.list(psp = psp, status = status, subMerchantId = subMerchantId, limit = limit, offset = offset)
     }
 
     /** Payment detail incl. event timeline + metadata. */
-    suspend fun getPayment(id: String): Result<RawMerchantApi.PaymentDetail> = withAccess { token ->
-        rawApi.getPayment(tokenStore.baseUrl, token, id)
+    suspend fun getPayment(id: String): Result<PaymentDetail> = guarded {
+        client().payments.get(id)
     }
 
-    // ------------------------------------------------------------------ settlements (raw — SDK 1.2)
+    // ------------------------------------------------------------------ settlements (SDK 1.2)
 
     suspend fun listSettlements(
         psp: String? = null,
         limit: Int = 50,
         offset: Int = 0,
-    ): Result<List<RawMerchantApi.SettlementFile>> = withAccess { token ->
-        rawApi.listSettlements(tokenStore.baseUrl, token, psp = psp, limit = limit, offset = offset)
+    ): Result<List<SettlementFile>> = guarded {
+        client().settlements.list(psp = psp, limit = limit, offset = offset)
     }
 
-    suspend fun getSettlement(fileId: String): Result<RawMerchantApi.SettlementFile> = withAccess { token ->
-        rawApi.getSettlement(tokenStore.baseUrl, token, fileId)
+    suspend fun getSettlement(fileId: String): Result<SettlementFile> = guarded {
+        client().settlements.get(fileId)
     }
 
     suspend fun listSettlementRows(
@@ -248,72 +248,72 @@ class MerchantRepository(
         statusFilter: String? = null,
         limit: Int = 100,
         offset: Int = 0,
-    ): Result<List<RawMerchantApi.SettlementRow>> = withAccess { token ->
-        rawApi.listSettlementRows(tokenStore.baseUrl, token, fileId, statusFilter = statusFilter, limit = limit, offset = offset)
+    ): Result<List<SettlementRow>> = guarded {
+        client().settlements.listRows(fileId, statusFilter = statusFilter, limit = limit, offset = offset)
     }
 
-    // ---- account / org / sub-merchants (raw — SDK 1.2) ----
+    // ---- account / org / sub-merchants (SDK 1.2) ----
 
     suspend fun changePassword(oldPassword: String, newPassword: String, code: String?): Result<Unit> =
-        withAccess { token -> rawApi.changePassword(tokenStore.baseUrl, token, oldPassword, newPassword, code) }
+        guarded { client().account.changePassword(oldPassword, newPassword, code) }
 
-    suspend fun mfaEnrol(): Result<RawMerchantApi.MfaEnrol> =
-        withAccess { token -> rawApi.mfaEnrol(tokenStore.baseUrl, token) }
+    suspend fun mfaEnrol(): Result<MfaEnrol> =
+        guarded { client().account.mfaEnrol() }
 
     suspend fun mfaConfirm(code: String): Result<Unit> {
-        val r = withAccess { token -> rawApi.mfaConfirm(tokenStore.baseUrl, token, code) }
+        val r = guarded { client().account.mfaConfirm(code) }
         if (r.isSuccess) refreshMe()
         return r
     }
 
     suspend fun mfaDisable(password: String): Result<Unit> {
-        val r = withAccess { token -> rawApi.mfaDisable(tokenStore.baseUrl, token, password) }
+        val r = guarded { client().account.mfaDisable(password) }
         if (r.isSuccess) refreshMe()
         return r
     }
 
-    suspend fun getOrg(): Result<RawMerchantApi.OrgInfo> =
-        withAccess { token -> rawApi.getOrg(tokenStore.baseUrl, token) }
+    suspend fun getOrg(): Result<OrgInfo> =
+        guarded { client().org.get() }
 
-    suspend fun updateOrg(patch: RawMerchantApi.OrgPatch): Result<RawMerchantApi.OrgInfo> =
-        withAccess { token -> rawApi.updateOrg(tokenStore.baseUrl, token, patch) }
+    suspend fun updateOrg(patch: OrgPatch): Result<OrgInfo> =
+        guarded { client().org.update(patch) }
 
-    suspend fun listSubMerchants(): Result<List<RawMerchantApi.SubMerchant>> =
-        withAccess { token -> rawApi.listSubMerchants(tokenStore.baseUrl, token) }
+    suspend fun listSubMerchants(): Result<List<SubMerchant>> =
+        guarded { client().subMerchants.list() }
 
-    suspend fun getSubMerchant(id: String): Result<RawMerchantApi.SubMerchant> =
-        withAccess { token -> rawApi.getSubMerchant(tokenStore.baseUrl, token, id) }
+    suspend fun getSubMerchant(id: String): Result<SubMerchant> =
+        guarded { client().subMerchants.get(id) }
 
-    suspend fun createSubMerchant(body: RawMerchantApi.SubMerchantCreate): Result<RawMerchantApi.SubMerchant> =
-        withAccess { token -> rawApi.createSubMerchant(tokenStore.baseUrl, token, body) }
+    suspend fun createSubMerchant(body: SubMerchantCreate): Result<SubMerchant> =
+        guarded { client().subMerchants.create(body) }
 
-    suspend fun updateSubMerchant(id: String, body: RawMerchantApi.SubMerchantPatch): Result<RawMerchantApi.SubMerchant> =
-        withAccess { token -> rawApi.updateSubMerchant(tokenStore.baseUrl, token, id, body) }
+    suspend fun updateSubMerchant(id: String, body: SubMerchantPatch): Result<SubMerchant> =
+        guarded { client().subMerchants.update(id, body) }
 
     suspend fun deleteSubMerchant(id: String): Result<Unit> =
-        withAccess { token -> rawApi.deleteSubMerchant(tokenStore.baseUrl, token, id) }
+        guarded { client().subMerchants.delete(id) }
 
-    suspend fun listSubUsers(subId: String): Result<List<RawMerchantApi.SubUser>> =
-        withAccess { token -> rawApi.listSubUsers(tokenStore.baseUrl, token, subId) }
+    suspend fun listSubUsers(subId: String): Result<List<SubUser>> =
+        guarded { client().subMerchants.users.list(subId) }
 
-    suspend fun createSubUser(subId: String, body: RawMerchantApi.SubUserCreate): Result<RawMerchantApi.SubUserCreated> =
-        withAccess { token -> rawApi.createSubUser(tokenStore.baseUrl, token, subId, body) }
+    suspend fun createSubUser(subId: String, body: SubUserCreate): Result<SubUserCreated> =
+        guarded { client().subMerchants.users.create(subId, body) }
 
     suspend fun updateSubUser(
         subId: String,
         uid: String,
-        body: RawMerchantApi.SubUserPatch,
-    ): Result<RawMerchantApi.SubUser> =
-        withAccess { token -> rawApi.updateSubUser(tokenStore.baseUrl, token, subId, uid, body) }
+        body: SubUserPatch,
+    ): Result<SubUser> =
+        guarded { client().subMerchants.users.update(subId, uid, body) }
 
     suspend fun disableSubUser(subId: String, uid: String): Result<Unit> =
-        withAccess { token -> rawApi.disableSubUser(tokenStore.baseUrl, token, subId, uid) }
+        guarded { client().subMerchants.users.disable(subId, uid) }
 
-    suspend fun reissueSubUserInvite(subId: String, uid: String): Result<RawMerchantApi.ReissueInvite> =
-        withAccess { token -> rawApi.reissueSubUserInvite(tokenStore.baseUrl, token, subId, uid) }
+    suspend fun reissueSubUserInvite(subId: String, uid: String): Result<ReissueInvite> =
+        guarded { client().subMerchants.users.reissueInvite(subId, uid) }
 
     suspend fun clearSubUserMfa(subId: String, uid: String, code: String): Result<Unit> =
-        withAccess { token -> rawApi.clearSubUserMfa(tokenStore.baseUrl, token, subId, uid, code) }
+        guarded { client().subMerchants.users.clearMfa(subId, uid, code) }
 
     // ------------------------------------------------------------------ devices (push)
 
@@ -337,15 +337,6 @@ class MerchantRepository(
         propagateAuthLoss(r)
         return r
     }
-
-    /**
-     * Wraps a raw-API call that needs the current bearer token. Mirrors [guarded]
-     * for the SDK path; the actual "no token → Unauthorized / 401 → refresh +
-     * retry once / refresh dead → [handleAuthLoss]" policy lives in [BearerRetry]
-     * so it can be unit-tested without an Android context.
-     */
-    private suspend fun <T> withAccess(block: suspend (String) -> Result<T>): Result<T> =
-        bearerRetry.execute(block)
 
     private fun <T> propagateAuthLoss(r: Result<T>) {
         if (r.appError() is AppError.Unauthorized) handleAuthLoss()

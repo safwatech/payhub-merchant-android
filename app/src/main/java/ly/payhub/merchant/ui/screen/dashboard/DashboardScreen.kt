@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ly.payhub.merchant.R
-import ly.payhub.merchant.data.RawMerchantApi
+import ly.payhub.*
 import ly.payhub.merchant.ui.components.BrandHeader
 import ly.payhub.merchant.ui.components.CounterCard
 import ly.payhub.merchant.ui.components.ErrorBox
@@ -194,7 +194,7 @@ private fun DashboardBody(state: DashboardUiState) {
 }
 
 @Composable
-private fun SubBreakdownCard(row: RawMerchantApi.SubBreakdownRow, currency: String) {
+private fun SubBreakdownCard(row: SubBreakdownRow, currency: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),

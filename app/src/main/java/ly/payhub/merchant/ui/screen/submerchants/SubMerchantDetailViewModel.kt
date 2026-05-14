@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ly.payhub.merchant.data.AppError
 import ly.payhub.merchant.data.MerchantRepository
-import ly.payhub.merchant.data.RawMerchantApi
+import ly.payhub.*
 import ly.payhub.merchant.data.appError
 import javax.inject.Inject
 
@@ -19,7 +19,7 @@ data class SubMerchantDetailUiState(
     val saving: Boolean = false,
     val deleting: Boolean = false,
     val error: AppError? = null,
-    val sub: RawMerchantApi.SubMerchant? = null,
+    val sub: SubMerchant? = null,
     val editName: String = "",
     val editActive: Boolean = true,
     val message: String? = null,
@@ -74,7 +74,7 @@ class SubMerchantDetailViewModel @Inject constructor(
         }
         _state.update { it.copy(saving = true, error = null) }
         viewModelScope.launch {
-            val r = repo.updateSubMerchant(subId, RawMerchantApi.SubMerchantPatch(name = name, status = status))
+            val r = repo.updateSubMerchant(subId, SubMerchantPatch(name = name, status = status))
             r.fold(
                 onSuccess = { upd ->
                     _state.update {

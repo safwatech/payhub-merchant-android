@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ly.payhub.merchant.data.AppError
 import ly.payhub.merchant.data.MerchantRepository
-import ly.payhub.merchant.data.RawMerchantApi
+import ly.payhub.*
 import ly.payhub.merchant.data.appError
 import javax.inject.Inject
 
@@ -25,7 +25,7 @@ data class SubUsersUiState(
     val refreshing: Boolean = false,
     val busy: Boolean = false,
     val error: AppError? = null,
-    val items: List<RawMerchantApi.SubUser> = emptyList(),
+    val items: List<SubUser> = emptyList(),
     /** Set when an invite/re-issue succeeds — the screen pops a copy-the-link dialog. */
     val invite: InviteResult? = null,
     /** Server-supplied message for the last write action (already friendly), shown via snackbar. */
@@ -85,7 +85,7 @@ class SubUsersViewModel @Inject constructor(
         viewModelScope.launch {
             val r = repo.createSubUser(
                 subId,
-                RawMerchantApi.SubUserCreate(
+                SubUserCreate(
                     username = username.trim(),
                     fullName = fullName.trim(),
                     email = email.trim().ifBlank { null },
@@ -99,7 +99,7 @@ class SubUsersViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             busy = false,
-                            items = it.items + created.toRow(),
+                            items = it.items + created.asSubUser(),
                             invite = InviteResult(created.inviteUrl, created.inviteSentToChannel),
                             message = MSG_INVITED,
                         )
@@ -118,7 +118,7 @@ class SubUsersViewModel @Inject constructor(
         if (_state.value.busy) return
         _state.update { it.copy(busy = true) }
         viewModelScope.launch {
-            val r = repo.updateSubUser(subId, uid, RawMerchantApi.SubUserPatch(role = role, status = status))
+            val r = repo.updateSubUser(subId, uid, SubUserPatch(role = role, status = status))
             r.fold(
                 onSuccess = { upd ->
                     _state.update {

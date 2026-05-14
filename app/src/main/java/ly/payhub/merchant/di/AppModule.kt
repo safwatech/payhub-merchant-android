@@ -10,7 +10,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import ly.payhub.merchant.data.MerchantRepository
-import ly.payhub.merchant.data.RawMerchantApi
 import ly.payhub.merchant.data.TokenStore
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
@@ -44,18 +43,12 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRawMerchantApi(httpClient: OkHttpClient): RawMerchantApi = RawMerchantApi(httpClient)
-
-    @Provides
-    @Singleton
     fun provideMerchantRepository(
         tokenStore: TokenStore,
-        rawApi: RawMerchantApi,
         httpClient: OkHttpClient,
         @AppCoroutineScope appScope: CoroutineScope,
     ): MerchantRepository = MerchantRepository(
         tokenStore = tokenStore,
-        rawApi = rawApi,
         sharedHttpClient = httpClient,
         appScope = appScope,
     )

@@ -30,7 +30,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Invite deep link: payhub://accept-invite?token=…&m=…&u=…&s=… -->
+            <!-- Invite App Link: https://app.payhub.ly/m/accept-invite?token=…&m=…&u=…&s=…
+                 Verified via /.well-known/assetlinks.json served by the WAF — see
+                 docs/runbooks/mobile-app-release.md (App Links section). -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="app.payhub.ly"
+                    android:pathPrefix="/m/accept-invite" />
+            </intent-filter>
+
+            <!-- Legacy invite custom-scheme deep link: payhub://accept-invite?…
+                 Retained for in-flight emails sent before the manifest update propagates.
+                 Slated for removal in 0.5.0. -->
             <intent-filter android:autoVerify="false">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

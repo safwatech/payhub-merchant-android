@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ly.payhub.merchant.R
-import ly.payhub.merchant.data.RawMerchantApi
+import ly.payhub.*
 import ly.payhub.merchant.ui.components.EmptyBox
 import ly.payhub.merchant.ui.components.ErrorBox
 import ly.payhub.merchant.ui.components.LoadingBox
@@ -142,7 +142,7 @@ fun PaymentsScreen(
 }
 
 @Composable
-private fun PaymentRowItem(row: RawMerchantApi.PaymentRow, onClick: () -> Unit) {
+private fun PaymentRowItem(row: PaymentRow, onClick: () -> Unit) {
     ListItem(
         modifier = Modifier
             .fillMaxWidth()

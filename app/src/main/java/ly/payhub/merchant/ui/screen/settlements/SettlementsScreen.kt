@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ly.payhub.merchant.R
-import ly.payhub.merchant.data.RawMerchantApi
+import ly.payhub.*
 import ly.payhub.merchant.ui.components.EmptyBox
 import ly.payhub.merchant.ui.components.ErrorBox
 import ly.payhub.merchant.ui.components.LoadingBox
@@ -128,7 +128,7 @@ fun SettlementsScreen(
 }
 
 @Composable
-private fun SettlementFileRow(file: RawMerchantApi.SettlementFile, onClick: () -> Unit) {
+private fun SettlementFileRow(file: SettlementFile, onClick: () -> Unit) {
     ListItem(
         modifier = Modifier
             .fillMaxWidth()

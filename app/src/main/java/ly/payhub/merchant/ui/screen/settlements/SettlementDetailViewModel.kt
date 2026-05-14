@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ly.payhub.merchant.data.AppError
 import ly.payhub.merchant.data.MerchantRepository
-import ly.payhub.merchant.data.RawMerchantApi
+import ly.payhub.*
 import ly.payhub.merchant.data.appError
 import javax.inject.Inject
 
@@ -33,11 +33,11 @@ data class SettlementDetailUiState(
     val loadingMore: Boolean = false,
     val error: AppError? = null,
     val filter: SettlementRowFilter = SettlementRowFilter.All,
-    val rows: List<RawMerchantApi.SettlementRow> = emptyList(),
+    val rows: List<SettlementRow> = emptyList(),
     val hasMore: Boolean = false,
     /** Lazy: only the rows endpoint is needed for the screen — the list
      *  endpoint already gave us the file's matched/mismatch counters. */
-    val file: RawMerchantApi.SettlementFile? = null,
+    val file: SettlementFile? = null,
     val fileError: AppError? = null,
 )
 

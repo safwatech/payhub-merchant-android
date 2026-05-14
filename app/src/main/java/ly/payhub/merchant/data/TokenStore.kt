@@ -39,23 +39,39 @@ class TokenStore(context: Context) {
         context.getSharedPreferences("${FILE_NAME}_fallback", Context.MODE_PRIVATE)
     }
 
+    /**
+     * Refresh-token at-rest vault. Access tokens are short-lived and stay
+     * in plain [prefs]; refresh tokens go through the vault which optionally
+     * AES/GCM-encrypts them under a biometric-bound AndroidKeyStore key
+     * — see [RefreshTokenVault] for the policy. The lock-enabled lambda
+     * reads [appLockEnabled] directly so we don't need a circular Hilt edge
+     * back into `AppLockController`.
+     */
+    val refreshVault: RefreshTokenVault = RefreshTokenVault(prefs, isLockEnabled = { appLockEnabled })
+
     // ---- tokens ----
 
     fun loadTokens(): TokenPair? {
         val access = prefs.getString(KEY_ACCESS, null) ?: return null
-        val refresh = prefs.getString(KEY_REFRESH, null) ?: return null
+        // One-shot migrate any 0.3.0 plaintext refresh-token slot into the vault.
+        val refresh = refreshVault.read() ?: prefs.getString(KEY_REFRESH, null)?.also { legacy ->
+            refreshVault.write(legacy)
+            prefs.edit().remove(KEY_REFRESH).apply()
+        } ?: return null
         return TokenPair(accessToken = access, refreshToken = refresh, expiresIn = 0)
     }
 
     fun saveTokens(tokens: TokenPair) {
-        prefs.edit()
-            .putString(KEY_ACCESS, tokens.accessToken)
-            .putString(KEY_REFRESH, tokens.refreshToken)
-            .apply()
+        prefs.edit().putString(KEY_ACCESS, tokens.accessToken).apply()
+        refreshVault.write(tokens.refreshToken)
     }
 
     fun clearTokens() {
-        prefs.edit().remove(KEY_ACCESS).remove(KEY_REFRESH).apply()
+        prefs.edit()
+            .remove(KEY_ACCESS)
+            .remove(KEY_REFRESH)  // 0.3.0 slot — wipe any leftover plaintext from upgrades.
+            .apply()
+        refreshVault.clear()
     }
 
     // ---- base URL ----

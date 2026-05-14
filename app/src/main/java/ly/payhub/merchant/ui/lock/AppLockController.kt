@@ -34,12 +34,20 @@ class AppLockController @VisibleForTesting internal constructor(
     private val readEnabled: () -> Boolean,
     private val writeEnabled: (Boolean) -> Unit,
     private val now: () -> Long,
+    /**
+     * Called after the toggle flips, with the new value. The production wiring
+     * routes this to `tokenStore.refreshVault.rewrap(...)` so the refresh
+     * token's at-rest form follows the lock state (see [RefreshTokenVault]).
+     * Tests pass a no-op.
+     */
+    private val onLockEnabledChanged: (Boolean) -> Unit = {},
 ) {
     @Inject
     constructor(tokenStore: TokenStore) : this(
         readEnabled = { tokenStore.appLockEnabled },
         writeEnabled = { tokenStore.appLockEnabled = it },
         now = SystemClock::elapsedRealtime,
+        onLockEnabledChanged = { enabled -> tokenStore.refreshVault.rewrap(enabled) },
     ) {
         ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onStop(owner: LifecycleOwner) = onAppBackgrounded()
@@ -65,6 +73,8 @@ class AppLockController @VisibleForTesting internal constructor(
     fun setEnabled(enabled: Boolean) {
         writeEnabled(enabled)
         if (!enabled) _locked.value = false
+        // Migrate the refresh-token at-rest wrapping in lockstep with the toggle.
+        onLockEnabledChanged(enabled)
     }
 
     val isEnabled: Boolean get() = readEnabled()

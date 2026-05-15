@@ -17,10 +17,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // The PayHub Android SDK (ly.payhub:payhub-android:1.1.0) — until that
-        // version is published to Maven Central by the safwatech/payhub-android
-        // mirror, build it locally:  (cd ../../sdks/android && ./gradlew publishToMavenLocal)
-        mavenLocal()
+        // For local SDK development (testing an unreleased version of
+        // payhub-android against this app), uncomment the line below and
+        // first run `(cd ../../sdks/android && ./gradlew publishToMavenLocal)`.
+        // Otherwise the published artefact from Maven Central is used.
+        // mavenLocal()
     }
 }
 

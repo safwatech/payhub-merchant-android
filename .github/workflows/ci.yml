@@ -1,15 +1,26 @@
 # CI for the standalone PayHub Merchant Android app.
 #
-# NOTE: this workflow is meaningful only once `apps/merchant-android/` has been
-# split into its own repo (e.g. `safwatech/payhub-merchant-android`) — it is
-# *not* one of the SDK mirrors and the mirror-publish machinery does not apply
-# to it. In the monorepo it sits here as a reference / for a path-filtered job.
-name: Android CI
+# Lives at `apps/merchant-android/.github/workflows/ci.yml` in the
+# monorepo, becomes `.github/workflows/ci.yml` after `scripts/mirror_plugins.sh
+# merchant-android` subtree-splits the tree into `safwatech/payhub-merchant-android`.
+# Therefore all `working-directory` references assume **mirror layout** (files at
+# repo root) — GitHub Actions does not pick up workflows from non-root paths in
+# the monorepo, so it's safe to design exclusively for the mirror.
+name: android-ci
 
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      release_track:
+        description: "Play Store track for the upload step (skipped if no secrets)."
+        required: false
+        default: "internal"
+        type: choice
+        options: [internal, alpha, beta, production]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -30,71 +41,108 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # The PayHub SDK (ly.payhub:payhub-android:1.1.0). Until it's on Maven
-      # Central via the safwatech/payhub-android mirror, this build resolves it
-      # from mavenLocal() (see settings.gradle.kts). In a standalone repo, either
-      # publish the SDK to a private Maven, vendor it, or pull a tagged build:
-      #   git clone --depth 1 -b v1.1.0 https://github.com/safwatech/payhub-android
-      #   (cd payhub-android && ./gradlew publishToMavenLocal)
-      # We skip that here (no-op if the dependency is already published).
-      - name: Note on SDK dependency
-        run: echo "If the build fails resolving ly.payhub:payhub-android, publish the SDK to mavenLocal first (see settings.gradle.kts)."
-
-      # FCM is optional: without google-services.json the Google-services plugin
-      # isn't applied (see app/build.gradle.kts) and assembleDebug still works.
-      # If you DO want to exercise FCM in CI, drop a base64 secret and uncomment:
-      # - name: Write google-services.json
-      #   if: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 != '' }}
-      #   run: echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > app/google-services.json
-      #   working-directory: apps/merchant-android
+      # FCM optional in PR / branch builds — without google-services.json the
+      # Google-services plugin no-ops (see app/build.gradle.kts). For release
+      # tags / dispatch runs the build will silently skip Firebase, which is
+      # fine for static analysis + unit tests; the release job below decodes
+      # the file so the produced AAB actually wires FCM.
+      - name: Write google-services.json (if secret set)
+        if: ${{ env.GOOGLE_SERVICES_JSON_BASE64 != '' }}
+        env:
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > app/google-services.json
 
       - name: Lint (ktlint)
         run: ./gradlew ktlintCheck
-        working-directory: apps/merchant-android
 
       - name: Static analysis (detekt)
         run: ./gradlew detekt
-        working-directory: apps/merchant-android
 
       - name: Unit tests
         run: ./gradlew :app:testDebugUnitTest
-        working-directory: apps/merchant-android
 
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug
-        working-directory: apps/merchant-android
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: apps/merchant-android/app/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: warn
 
-  # Release build — wired but disabled until signing secrets exist in the
-  # standalone repo. Distinct keystore from the SDK's Maven GPG signing key.
+  # Release build — runs on `v*` tag push or manual dispatch. Requires the
+  # signing-secret bundle described in `docs/runbooks/phase-5-mobile-distribution.md`.
   release:
-    if: false
-    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # to attach the AAB/APK to the GitHub Release
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: "17" }
-      - uses: gradle/actions/setup-gradle@v3
-      - name: Decode keystore
-        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
-      - name: Assemble release
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Write google-services.json
         env:
-          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: |
+          test -n "$GOOGLE_SERVICES_JSON_BASE64" || { echo "::error::GOOGLE_SERVICES_JSON_BASE64 secret missing"; exit 1; }
+          echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > app/google-services.json
+
+      - name: Decode upload keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          test -n "$ANDROID_KEYSTORE_BASE64" || { echo "::error::ANDROID_KEYSTORE_BASE64 secret missing"; exit 1; }
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.keystore"
+
+      - name: Assemble release AAB + APK
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/upload.keystore
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew :app:assembleRelease :app:bundleRelease
-        working-directory: apps/merchant-android
-      - uses: actions/upload-artifact@v4
+          # Auto-bump versionCode from the workflow run number so every CI
+          # release build is uniquely identifiable to the Play Console.
+          # +10000 leaves room for manual versionCode bumps below that.
+          PAYHUB_VERSION_CODE_OFFSET: "10000"
+        run: ./gradlew :app:bundleRelease :app:assembleRelease
+
+      - name: Upload release artefacts to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            app/build/outputs/bundle/release/*.aab
+            app/build/outputs/apk/release/*.apk
+          fail_on_unmatched_files: true
+
+      - name: Upload AAB as workflow artefact
+        uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: |
-            apps/merchant-android/app/build/outputs/apk/release/*.apk
-            apps/merchant-android/app/build/outputs/bundle/release/*.aab
+            app/build/outputs/bundle/release/*.aab
+            app/build/outputs/apk/release/*.apk
+
+      # Optional: push the AAB to Play Console straight from CI. Enable by
+      # provisioning the Play service-account JSON secret + uncommenting the
+      # step below. The action skips itself if the secret is missing, so it
+      # can be left in place — see r0adkll/upload-google-play docs.
+      - name: Publish to Google Play (when secret present)
+        if: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' && startsWith(github.ref, 'refs/tags/v') }}
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: ly.payhub.merchant
+          releaseFiles: app/build/outputs/bundle/release/app-release.aab
+          track: ${{ github.event.inputs.release_track || 'internal' }}
+          status: completed
+          mappingFile: app/build/outputs/mapping/release/mapping.txt

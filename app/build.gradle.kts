@@ -21,6 +21,16 @@ if (file("google-services.json").exists()) {
 
 val appVersionName = file("../VERSION").takeIf { it.exists() }?.readText()?.trim() ?: "0.1.0"
 
+// versionCode auto-bump: in CI, derive from GITHUB_RUN_NUMBER so every CI build
+// gets a strictly-increasing code without manual bumps. Locally (no env var
+// set) we fall back to a fixed value so debug builds stay reproducible. The
+// PAYHUB_VERSION_CODE_OFFSET (defaults to 10_000) leaves room for any manual
+// bumps below it that the Play Console might have seen historically. Play
+// Console refuses an upload whose versionCode is <= an existing one.
+val ciRunNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()
+val versionCodeOffset = System.getenv("PAYHUB_VERSION_CODE_OFFSET")?.toIntOrNull() ?: 10_000
+val computedVersionCode = ciRunNumber?.let { it + versionCodeOffset } ?: 2
+
 // Crash-reporting DSN (GlitchTip / Sentry). Empty by default ⇒ the SDK is a
 // graceful no-op; the vendor sets it at build time via `-Ppayhub.sentryDsn=…`
 // or the PAYHUB_SENTRY_DSN env var. See PayhubMerchantApp / docs/mobile-app.md.
@@ -35,7 +45,7 @@ android {
         applicationId = "ly.payhub.merchant"
         minSdk = 24
         targetSdk = 34
-        versionCode = 2
+        versionCode = computedVersionCode
         versionName = appVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }

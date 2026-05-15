@@ -9,8 +9,8 @@
 .cxx
 local.properties
 
-# Gradle wrapper jar — regenerate with `gradle wrapper` or open in Android Studio.
-gradle/wrapper/gradle-wrapper.jar
+# `gradle/wrapper/gradle-wrapper.jar` is intentionally tracked — without it
+# `./gradlew` can't bootstrap, which breaks every fresh clone + CI runner.
 
 # Secrets — never commit
 app/google-services.json
